@@ -1,0 +1,25 @@
+name: PHP checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  php:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['7.4', '8.2', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, curl
+      - name: PHP syntax check
+        run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
+      - name: Classification parser tests
+        run: php tests/classifier_test.php
+      - name: Composer metadata
+        run: php -r '$v = json_decode(file_get_contents("composer.json"), true, 512, JSON_THROW_ON_ERROR); if ($v["type"] !== "phpbb-extension") exit(1);'
