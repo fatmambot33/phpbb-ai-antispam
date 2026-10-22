@@ -16,7 +16,7 @@ class classifier
      * The result ALWAYS contains one of spam/legitimate/uncertain.
      * Provider failures never become a positive spam judgment and never throw.
      *
-     * @return array{classification:string,confidence:int,spam_probability:int,provider_confidence:int,reason:string,error_code:string,retryable:bool}
+     * @return array{classification:string,confidence:int,spam_probability:int,provider_confidence:int,reason:string,error_code:string}
      */
     public function classify($subject, $body)
     {
@@ -98,7 +98,6 @@ class classifier
             'provider_confidence' => 0,
             'reason' => 'Classification unavailable: ' . $code,
             'error_code' => $code,
-            'retryable' => true,
         ];
     }
 
@@ -204,7 +203,6 @@ class classifier
             'reason' => sprintf('Decisions: %s; P(spam)=%d%%; model confidence=%d%%',
                 $label, $spam_probability, $provider_confidence),
             'error_code' => '',
-            'retryable' => false,
         ];
     }
 
