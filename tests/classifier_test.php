@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/../service/classifier.php';
-require_once __DIR__ . '/../service/scanner.php';
 use bca\antispam\service\classifier;
-use bca\antispam\service\scanner;
 
 function decision_fixture($label, $p_spam, $provider_confidence)
 {
@@ -63,7 +61,5 @@ assert_true(classifier::http_error_code(500, '') === 'provider_error', 'Provider
 assert_true(classifier::http_error_code(401, '') === 'invalid_api_key', 'Invalid credentials classification');
 assert_true(classifier::unavailable('refusal')['classification'] === 'uncertain', 'Refusals must be uncertain');
 assert_true(classifier::unavailable('invalid_response')['classification'] === 'uncertain', 'Malformed payload must be uncertain');
-assert_true(scanner::retry_policy('timeout', 0)['retry_after'] === 60, 'First retry delay');
-assert_true(scanner::retry_policy('timeout', 4)['retry_after'] === 0, 'Retries must be bounded');
-assert_true(scanner::retry_policy('budget_exceeded', 0)['retry_after'] === 21600, 'Budget cooldown');
-echo "Failure safety and bounded retry tests passed\n";
+assert_true(!array_key_exists('retryable', $failed), 'No custom retry scheduling in classification');
+echo "Failure safety tests passed\n";
