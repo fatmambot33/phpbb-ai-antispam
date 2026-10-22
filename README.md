@@ -2,7 +2,7 @@
 
 **Experimental PHP extension for phpBB 3.3. Not production-ready.**
 
-The extension reviews **already published** posts and classifies them with a small OpenAI model (`gpt-5-nano`). It does **not** block new posts or recall subscriber emails already sent by phpBB. It can optionally *soft-delete* clear spam using phpBB's core visibility service, making it invisible to regular visitors without irreversibly removing the post.
+The extension reviews **already published** posts and classifies them with a small OpenAI model (`gpt-6-luna` via the OpenAI Decisions API). It does **not** block new posts or recall subscriber emails already sent by phpBB. It can optionally *soft-delete* clear spam using phpBB's core visibility service, making it invisible to regular visitors without irreversibly removing the post.
 
 ## Capabilities in 0.1.0-beta
 
@@ -11,7 +11,7 @@ The extension reviews **already published** posts and classifies them with a sma
 - Only scan approved posts; scan up to 10 posts per run from a configurable lookback window.
 - Re-check previously scanned posts if subsequently edited.
 - Store `post_id`, content hash, decision, timestamp and concise rationale for audit; no raw post text persisted in extension table.
-- Fail closed on API error: no soft-deletion.
+- API failures or malformed answers are recorded as `uncertain`, with no moderation action. No automatic retries, cooldowns or suspensions.
 - Default: scanner disabled and auto-hide disabled.
 - Soft-delete through `content.visibility`, not direct database updates.
 
@@ -30,13 +30,13 @@ The extension reviews **already published** posts and classifies them with a sma
 
 ### Privacy
 
-Posts are sent to the OpenAI API over HTTPS with `store: false`. No email address or IP address is intentionally included, though user-authored post text may itself contain personal data. Opt in only to appropriate public forums, document processing under GDPR, and obtain any necessary approvals.
+Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not submit a `store` flag. No email address or IP address is intentionally included, though user-authored post text may itself contain personal data. Opt in only to appropriate public forums, document processing under GDPR, and obtain any necessary approvals.
 
 ### Limitations
 
 - It cannot retract notifications already delivered.
 - Model confidence is not a calibrated probability. False positives are possible.
-- Cron throughput is limited by 10 posts/run and 25s API timeout/post. At 120-second intervals it may fall behind on busy forums; tune limits and scheduling after tests.
+- Each eligible post gets one classification attempt per scan; failures remain `uncertain` until a manual re-scan or content edit. Cron throughput is limited by 10 posts/run and 25s API timeout/post. At 120-second intervals it may fall behind on busy forums; tune limits and scheduling after tests.
 - Modifying visibility through the core API avoids direct database corruption but still needs integration testing on phpBB 3.3 before production.
 - Restoration is via phpBB's normal moderation tooling; no custom moderator dashboard yet.
 - The prototype scans historic published posts and edits on previously scanned posts. It does not discover edits to old, never-scanned posts outside the lookback window.
