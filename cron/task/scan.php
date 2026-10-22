@@ -26,7 +26,7 @@ class scan extends \phpbb\cron\task\base
 
     public function run()
     {
-        // A failed request will be retried at the next interval; cron is not a real-time guarantee.
+        // Each post is classified once per scan; API errors are recorded as uncertain.
         try
         {
             $this->scanner->run();
