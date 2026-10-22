@@ -19,8 +19,7 @@
 - [ ] Mark and skip moderator-reviewed legitimate posts
 - [ ] Notify staff on suspected spam (not regular subscribers)
 
-## V0.3 — Operational resilience
-- [ ] Adaptive retry/backoff on API rate limits; cost caps
+## V0.3 — Operational improvements
 - [ ] Add lock/idempotency guard for concurrent cron executions
 - [ ] Support author-based heuristics and allowlists
 - [ ] Backfill with pause/resume and visible progress
