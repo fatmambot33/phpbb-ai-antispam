@@ -10,6 +10,7 @@ services:
             - '@content.visibility'
             - '@bca.antispam.classifier'
             - '%core.table_prefix%'
+            - '@auth'
 
     bca.antispam.cron.task.scan:
         class: bca\antispam\cron\task\scan

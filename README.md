@@ -7,7 +7,7 @@ The extension reviews **already published** posts and classifies them with a sma
 ## Capabilities in 0.1.0-beta
 
 - Run as a native phpBB cron task (no Python/Docker dependency).
-- Only scan explicitly configured forum IDs, never private forums by default.
+- Only scan explicitly configured forum IDs that guests can list and read; password-protected forums are excluded. Public access is rechecked before each request.
 - Only scan approved posts; scan up to 10 posts per run from a configurable lookback window.
 - Re-check previously scanned posts if subsequently edited.
 - Store `post_id`, content hash, decision, timestamp and concise rationale for audit; no raw post text persisted in extension table.
@@ -47,6 +47,7 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 ```bash
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
+php tests/scanner_test.php
 ```
 
 ## Roadmap

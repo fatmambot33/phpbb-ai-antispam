@@ -21,5 +21,7 @@ jobs:
         run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Classification parser tests
         run: php tests/classifier_test.php
+      - name: Scanner regression tests
+        run: php tests/scanner_test.php
       - name: Composer metadata
         run: php -r '$v = json_decode(file_get_contents("composer.json"), true, 512, JSON_THROW_ON_ERROR); if ($v["type"] !== "phpbb-extension") exit(1);'
