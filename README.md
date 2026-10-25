@@ -18,13 +18,44 @@ The extension reviews **already published** posts and classifies them with a sma
 ## Install in test environment first
 
 1. Back up the phpBB database and files. Verify phpBB 3.3, PHP >= 7.4, cURL and mbstring.
-2. Put this project in **`<phpbb-root>/ext/bca/antispam/`**. `composer.json` must be at that path.
+2. Download an **install package**, extract it, and copy the extracted **`bca`** folder into **`<phpbb-root>/ext/`**. The final path must be **`<phpbb-root>/ext/bca/antispam/composer.json`**. See the download options below.
 3. Supply `BCA_ANTISPAM_OPENAI_API_KEY` as an environment variable visible to phpBB PHP workers and CLI processes. Do not put the key in Git or ACP settings.
 4. In phpBB ACP: **Customise > Manage extensions > AI Anti-Spam > Enable**.
 5. In **Extensions > AI Anti-Spam**, opt in to specific **public** forum IDs. Set scan enabled, **leave automatic soft-delete disabled**.
 6. Schedule phpBB's standard cron runner via hosting cron / phpBB CLI. The default job interval is 120 seconds, but actual timing depends on cron deployment and job time budget.
 7. Validate returned classifications from test posts, including real legitimate club advertisements, before even considering automatic soft-deletion.
 8. Observe phpBB database state, counters, topic-first/last handling and moderator restoration on a **staging clone** prior to production deployment.
+
+### Get the install ZIP
+
+- **From GitHub:** open [Actions → Install package](https://github.com/fatmambot33/phpbb-ai-antispam/actions/workflows/package.yml), choose **Run workflow** on the branch you want to test, then download the **bca-antispam** artifact from the completed run (GitHub sign-in required). The downloaded ZIP already contains `bca/antispam/`. Version tags also run this workflow.
+- **From a local checkout:** run `python3 scripts/package.py`. Upload/extract the resulting `dist/bca-antispam-0.1.0-beta.zip` using the same instructions. Python is only needed to build the ZIP, never on your forum server.
+- GitHub's green **Code → Download ZIP** button downloads the development repository. If you use that archive, rename its extracted project folder to `antispam` and put it inside `ext/bca/`. The install package avoids that renaming step.
+
+After copying, your forum files should look like:
+
+```text
+<phpbb-root>/
+└── ext/
+    └── bca/
+        └── antispam/
+            ├── composer.json
+            ├── acp/
+            ├── adm/
+            ├── config/
+            ├── cron/
+            ├── language/
+            ├── migrations/
+            └── service/
+```
+
+There is no Composer install or separate application to run on the server. Enable the extension through phpBB, then configure its API key, selected forum IDs and cron as described above. These packages are experimental test builds, not phpBB-validated releases.
+
+### Update or remove
+
+To update, back up the database and extension files, disable **AI Anti-Spam** in the ACP, replace `ext/bca/antispam/` with the new package's `bca/antispam/` directory, then enable the extension again. **Do not choose Delete data during an update.**
+
+To remove it permanently, disable it, choose **Delete data** in phpBB's extension manager, then remove `ext/bca/antispam/`. Deleting data removes the extension's settings and audit records; it does not restore posts previously hidden by the extension. Restore those through phpBB's moderation tools first if needed.
 
 **Important:** The ACP displays the last 30 classifications, but does not yet allow per-result feedback or restoration. Revert soft-deleted posts through phpBB moderation tools. Do not enable auto-hide until you have reviewed representative results.
 
@@ -48,7 +79,14 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
 php tests/scanner_test.php
+python3 tests/package_test.py
 ```
+
+## Repository and package layout
+
+The repository root is the extension root, following the official [phpBB Board Announcements extension](https://github.com/phpbb-extensions/boardannouncements). Clone it directly into `ext/bca/antispam/` for development; a second nested extension directory is unnecessary.
+
+`scripts/package.py` builds a reproducible install ZIP containing the runtime directories, metadata, license and user documentation. Tests, build scripts, GitHub configuration and local credentials are excluded. `.gitattributes` also excludes development files from Git archives. CI verifies the install path, file contents and reproducibility.
 
 ## Roadmap
 
