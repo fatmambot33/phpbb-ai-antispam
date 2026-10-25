@@ -1,0 +1,40 @@
+<!-- INCLUDE overall_header.html -->
+<h1>{L_ACP_BCA_ANTISPAM_TITLE}</h1>
+<p>Classify existing published posts. By default, no message is hidden automatically. <strong>Soft deletions do not recall already-sent emails.</strong></p>
+<!-- IF not API_KEY_SET -->
+<div class="errorbox"><p>Missing environment variable BCA_ANTISPAM_OPENAI_API_KEY. Scanning will not run.</p></div>
+<!-- ENDIF -->
+<form method="post" action="{U_ACTION}">
+<fieldset>
+<legend>Scan settings</legend>
+<dl><dt><label for="enabled">Enable scanning</label></dt><dd><input id="enabled" type="checkbox" name="enabled" value="1"<!-- IF S_ENABLED --> checked<!-- ENDIF --> /></dd></dl>
+<dl><dt><label for="forum_ids">Forum IDs to scan (comma separated, mandatory)</label></dt><dd><input id="forum_ids" type="text" name="forum_ids" value="{FORUM_IDS}" size="50" /><p>Only selected public forums; leave blank to process nothing.</p></dd></dl>
+<dl><dt><label for="excluded_user_ids">Excluded user IDs</label></dt><dd><input id="excluded_user_ids" type="text" name="excluded_user_ids" value="{EXCLUDED_USER_IDS}" size="50" /></dd></dl>
+<dl><dt><label for="interval">Interval (seconds)</label></dt><dd><input id="interval" type="number" min="60" max="3600" name="interval" value="{INTERVAL}" /></dd></dl>
+<dl><dt><label for="days">Lookback period (days)</label></dt><dd><input id="days" type="number" min="1" max="365" name="days" value="{DAYS}" /></dd></dl>
+<dl><dt>Last scanned post ID</dt><dd><strong>{CURSOR}</strong></dd></dl>
+<dl><dt><label for="reset_cursor">Re-scan lookback period</label></dt><dd><input type="checkbox" id="reset_cursor" name="reset_cursor" value="1" /> Reset cursor on save</dd></dl>
+</fieldset>
+<fieldset>
+<legend>Moderation</legend>
+<dl><dt><label for="auto_hide">Soft-delete high-confidence spam automatically</label></dt><dd><input type="checkbox" id="auto_hide" name="auto_hide" value="1"<!-- IF S_AUTO_HIDE --> checked<!-- ENDIF --> /><p>Turn on only after reviewing a representative dry-run sample.</p></dd></dl>
+<dl><dt><label for="threshold">Conservative safety threshold (minimum of category probability and model confidence; 80–100)</label></dt><dd><input id="threshold" type="number" min="80" max="100" name="threshold" value="{THRESHOLD}" /></dd></dl>
+</fieldset>
+<fieldset class="submit-buttons"><input class="button1" type="submit" name="submit" value="{L_SUBMIT}" />{S_FORM_TOKEN}</fieldset>
+</form>
+<h2>Latest classification decisions</h2>
+<table class="table1">
+    <thead><tr><th>Post</th><th>Checked</th><th>Decision</th><th>Safety score</th><th>P(spam)</th><th>Model confidence</th><th>Reason</th><th>Action</th></tr></thead>
+    <tbody>
+    <!-- BEGIN result -->
+    <tr>
+        <td><!-- IF result.U_POST --><a href="{result.U_POST}">#{result.POST_ID}</a><!-- ELSE -->#{result.POST_ID}<!-- ENDIF --></td>
+        <td>{result.DATE}</td><td>{result.CLASSIFICATION}</td><td>{result.CONFIDENCE}</td>
+        <td>{result.SPAM_PROBABILITY}%</td><td>{result.PROVIDER_CONFIDENCE}%</td><td>{result.REASON}</td><td>{result.ACTION}</td>
+    </tr>
+    <!-- BEGINELSE -->
+    <tr><td colspan="8">No classification results yet.</td></tr>
+    <!-- END result -->
+    </tbody>
+</table>
+<!-- INCLUDE overall_footer.html -->

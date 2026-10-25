@@ -1,0 +1,23 @@
+services:
+    bca.antispam.classifier:
+        class: bca\antispam\service\classifier
+
+    bca.antispam.scanner:
+        class: bca\antispam\service\scanner
+        arguments:
+            - '@config'
+            - '@dbal.conn'
+            - '@content.visibility'
+            - '@bca.antispam.classifier'
+            - '%core.table_prefix%'
+            - '@auth'
+
+    bca.antispam.cron.task.scan:
+        class: bca\antispam\cron\task\scan
+        arguments:
+            - '@config'
+            - '@bca.antispam.scanner'
+        calls:
+            - [set_name, [bca.antispam.cron.task.scan]]
+        tags:
+            - { name: cron.task }

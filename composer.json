@@ -1,0 +1,10 @@
+{
+  "name": "bca/antispam",
+  "type": "phpbb-extension",
+  "description": "Review already published phpBB posts with AI and optionally soft-delete likely spam.",
+  "version": "0.1.0-beta",
+  "license": "GPL-2.0-only",
+  "require": {"php": ">=7.4", "phpbb/phpbb": ">=3.3.0,<3.4.0@dev"},
+  "extra": {"display-name": "AI Anti-Spam for phpBB", "soft-require": {"phpbb/phpbb": ">=3.3.0,<3.4.0@dev"}},
+  "authors": [{"name": "BCA Contributors"}]
+}
