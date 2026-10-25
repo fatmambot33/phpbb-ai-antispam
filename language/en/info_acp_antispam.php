@@ -4,4 +4,6 @@ $lang = array_merge($lang, [
     'ACP_BCA_ANTISPAM_TITLE' => 'AI Anti-Spam',
     'ACP_BCA_ANTISPAM_SETTINGS' => 'Settings',
     'ACP_BCA_ANTISPAM_SAVED' => 'AI Anti-Spam settings saved.',
+    'ACP_BCA_ANTISPAM_VIEW_MESSAGE' => 'View message',
+    'ACP_BCA_ANTISPAM_NEW_TAB' => 'Opens in a new tab',
 ]);
