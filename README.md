@@ -28,9 +28,11 @@ The extension reviews **already published** posts and classifies them with a sma
 
 ### Get the install ZIP
 
-- **From GitHub:** open [Actions → Install package](https://github.com/fatmambot33/phpbb-ai-antispam/actions/workflows/package.yml), choose **Run workflow** on the branch you want to test, then download the **bca-antispam** artifact from the completed run (GitHub sign-in required). The downloaded ZIP already contains `bca/antispam/`. Version tags also run this workflow.
+- **From GitHub:** open [Actions → Install package](https://github.com/fatmambot33/phpbb-ai-antispam/actions/workflows/package.yml), choose **Run workflow** on the branch you want to test, then follow the **Download ZIP from the draft release** link in the completed run’s summary. Download **`bca-antispam-0.1.0-beta.zip`** under the draft release’s assets. The ZIP already contains `bca/antispam/`. Draft releases require repository write access to view; publish the draft manually when you want to share it. Each run attempt creates a separate draft, and version tags also run this workflow.
 - **From a local checkout:** run `python3 scripts/package.py`. Upload/extract the resulting `dist/bca-antispam-0.1.0-beta.zip` using the same instructions. Python is only needed to build the ZIP, never on your forum server.
 - GitHub's green **Code → Download ZIP** button downloads the development repository. If you use that archive, rename its extracted project folder to `antispam` and put it inside `ext/bca/`. The install package avoids that renaming step.
+
+The workflow uses GitHub Release assets instead of Actions artifacts, so it does not consume the Actions artifact storage quota. It creates a draft prerelease and does not publish it automatically.
 
 After copying, your forum files should look like:
 

@@ -9,6 +9,8 @@ permissions:
 jobs:
   package:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -17,12 +19,18 @@ jobs:
       - name: Verify packaging
         run: python3 tests/package_test.py
       - name: Build install package
+        run: python3 scripts/package.py
+      - name: Attach ZIP to a draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
         run: |
-          python3 scripts/package.py
-          python3 -m zipfile -e dist/bca-antispam-*.zip dist/install
-      - name: Upload installable ZIP contents
-        uses: actions/upload-artifact@v4
-        with:
-          name: bca-antispam
-          path: dist/install/
-          if-no-files-found: error
+          set -euo pipefail
+          # A new draft per attempt avoids overwriting any published release.
+          release_tag="install-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          release_url=$(gh release create "$release_tag" dist/bca-antispam-*.zip \
+            --draft --prerelease --target "$GITHUB_SHA" \
+            --title "AI Anti-Spam test package ($release_tag)" \
+            --notes "Experimental test build from commit $GITHUB_SHA. Extract the attached ZIP and copy bca/ into your test forum's ext/ directory. Keep automatic hiding disabled. This draft has not been published or validated on a staging phpBB forum.")
+          printf '### Install package\n\n[Download ZIP from the draft release](%s)\n\nThe draft is visible to repository collaborators with write access. Publish it manually when you want to share the download.\n' "$release_url" >> "$GITHUB_STEP_SUMMARY"
