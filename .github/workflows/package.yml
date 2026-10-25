@@ -1,0 +1,28 @@
+name: Install package
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - name: Verify packaging
+        run: python3 tests/package_test.py
+      - name: Build install package
+        run: |
+          python3 scripts/package.py
+          python3 -m zipfile -e dist/bca-antispam-*.zip dist/install
+      - name: Upload installable ZIP contents
+        uses: actions/upload-artifact@v4
+        with:
+          name: bca-antispam
+          path: dist/install/
+          if-no-files-found: error
