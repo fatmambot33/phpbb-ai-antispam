@@ -22,7 +22,26 @@
 </fieldset>
 <fieldset class="submit-buttons"><input class="button1" type="submit" name="submit" value="{L_SUBMIT}" />{S_FORM_TOKEN}</fieldset>
 </form>
+<fieldset>
+<legend>{L_ACP_BCA_ANTISPAM_SCAN_STATUS}</legend>
+<dl><dt>{L_ACP_BCA_ANTISPAM_LAST_RUN}</dt><dd>{LAST_RUN}</dd></dl>
+<dl><dt>{L_ACP_BCA_ANTISPAM_SCHEDULING}</dt><dd>
+<!-- IF not S_ENABLED -->{L_ACP_BCA_ANTISPAM_DISABLED}
+<!-- ELSEIF not API_KEY_SET -->{L_ACP_BCA_ANTISPAM_NO_KEY}
+<!-- ELSEIF not FORUM_IDS -->{L_ACP_BCA_ANTISPAM_NO_FORUMS}
+<!-- ELSEIF S_SCAN_DUE -->{L_ACP_BCA_ANTISPAM_DUE}
+<!-- ELSE -->{L_ACP_BCA_ANTISPAM_WAITING}<!-- ENDIF -->
+</dd></dl>
+<p><!-- IF S_SYSTEM_CRON -->{L_ACP_BCA_ANTISPAM_SYSTEM_CRON}<!-- ELSE -->{L_ACP_BCA_ANTISPAM_VISIT_CRON}<!-- ENDIF --></p>
+<p>{L_ACP_BCA_ANTISPAM_SCAN_HELP}</p>
+<form method="post" action="{U_ACTION}">
+<p><input class="button2" type="submit" name="scan_now" value="{L_ACP_BCA_ANTISPAM_SCAN_NOW}" /> <a href="{U_ACTION}">{L_ACP_BCA_ANTISPAM_REFRESH}</a></p>
+{S_FORM_TOKEN}
+</form>
+</fieldset>
 <h2>Latest classification decisions</h2>
+<p>{RESULTS_SUMMARY}</p>
+<p>{L_ACP_BCA_ANTISPAM_RESULTS_HELP}</p>
 <table class="table1">
     <thead><tr><th>Post</th><th>Checked</th><th>Decision</th><th>Safety score</th><th>P(spam)</th><th>Model confidence</th><th>Reason</th><th>Action</th></tr></thead>
     <tbody>

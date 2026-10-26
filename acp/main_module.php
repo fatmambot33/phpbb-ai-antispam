@@ -9,12 +9,39 @@ class main_module
 
     public function main($id, $mode)
     {
-        global $config, $request, $template, $user, $db, $table_prefix, $phpbb_root_path, $phpEx;
+        global $config, $request, $template, $user, $db, $table_prefix, $phpbb_root_path, $phpEx, $phpbb_container;
 
         $user->add_lang_ext('bca/antispam', 'info_acp_antispam');
         $this->tpl_name = 'acp_bca_antispam';
         $this->page_title = 'ACP_BCA_ANTISPAM_TITLE';
         add_form_key('bca_antispam_settings');
+
+        if ($request->is_set_post('scan_now'))
+        {
+            if (!check_form_key('bca_antispam_settings'))
+            {
+                trigger_error('FORM_INVALID', E_USER_WARNING);
+            }
+            $task = $phpbb_container->get('bca.antispam.cron.task.scan');
+            if (!$task->is_runnable())
+            {
+                trigger_error($user->lang('ACP_BCA_ANTISPAM_SCAN_UNAVAILABLE') . adm_back_link($this->u_action), E_USER_WARNING);
+            }
+            $lock = $phpbb_container->get('cron.lock_db');
+            if (!$lock->acquire())
+            {
+                trigger_error($user->lang('ACP_BCA_ANTISPAM_SCAN_BUSY') . adm_back_link($this->u_action), E_USER_WARNING);
+            }
+            try
+            {
+                $processed = $task->run();
+            }
+            finally
+            {
+                $lock->release();
+            }
+            trigger_error($user->lang('ACP_BCA_ANTISPAM_SCAN_COMPLETE', $processed) . adm_back_link($this->u_action));
+        }
 
         if ($request->is_set_post('submit'))
         {
@@ -46,6 +73,10 @@ class main_module
             trigger_error($user->lang('ACP_BCA_ANTISPAM_SAVED') . adm_back_link($this->u_action));
         }
 
+        $count_result = $db->sql_query('SELECT COUNT(*) AS total FROM ' . $table_prefix . 'bca_antispam_results');
+        $total = (int) $db->sql_fetchfield('total', false, $count_result);
+        $db->sql_freeresult($count_result);
+        $shown = 0;
         $sql = 'SELECT r.post_id, r.checked_at, r.classification, r.confidence, r.spam_probability, r.provider_confidence,
                        r.reason, r.action_taken, p.topic_id
                 FROM ' . $table_prefix . 'bca_antispam_results r
@@ -54,6 +85,7 @@ class main_module
         $result = $db->sql_query_limit($sql, 30);
         while ($row = $db->sql_fetchrow($result))
         {
+            $shown++;
             $post_id = (int) $row['post_id'];
             $template->assign_block_vars('result', [
                 'POST_ID' => $post_id,
@@ -70,6 +102,10 @@ class main_module
         $db->sql_freeresult($result);
 
         $template->assign_vars([
+            'LAST_RUN' => !empty($config['bca_antispam_last_run']) ? $user->format_date((int) $config['bca_antispam_last_run']) : $user->lang('ACP_BCA_ANTISPAM_NEVER'),
+            'S_SCAN_DUE' => (int) $config['bca_antispam_last_run'] <= time() - (int) $config['bca_antispam_interval'],
+            'S_SYSTEM_CRON' => !empty($config['use_system_cron']),
+            'RESULTS_SUMMARY' => $user->lang('ACP_BCA_ANTISPAM_RESULTS_SUMMARY', $shown, $total),
             'U_ACTION' => $this->u_action,
             'S_ENABLED' => (bool) $config['bca_antispam_enabled'],
             'S_AUTO_HIDE' => (bool) $config['bca_antispam_auto_hide'],
