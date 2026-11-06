@@ -17,6 +17,7 @@ class link_request
 class link_user
 {
     public function add_lang_ext($extension, $file) {}
+    public function lang($key, ...$args) { return $key . ':' . implode(',', $args); }
     public function format_date($time) { return (string) $time; }
 }
 class link_template
@@ -27,6 +28,8 @@ class link_template
 }
 class link_database
 {
+    public function sql_query($sql) { return (object) ['rows' => [['total' => 3]]]; }
+    public function sql_fetchfield($field, $row, $result) { return $result->rows[0][$field]; }
     public function sql_query_limit($sql, $limit)
     {
         $audit = [
@@ -48,7 +51,7 @@ class link_database
 
 $config = [
     'bca_antispam_enabled' => 1, 'bca_antispam_auto_hide' => 0,
-    'bca_antispam_threshold' => 95, 'bca_antispam_interval' => 120,
+    'bca_antispam_threshold' => 95, 'bca_antispam_interval' => 120, 'bca_antispam_last_run' => 0,
     'bca_antispam_days' => 30, 'bca_antispam_forum_ids' => '2',
     'bca_antispam_excluded_user_ids' => '', 'bca_antispam_cursor' => 103,
 ];

@@ -29,7 +29,7 @@ class scan extends \phpbb\cron\task\base
         // Each post is classified once per scan; API errors are recorded as uncertain.
         try
         {
-            $this->scanner->run();
+            return $this->scanner->run();
         }
         finally
         {

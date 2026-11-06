@@ -61,6 +61,18 @@ To remove it permanently, disable it, choose **Delete data** in phpBB's extensio
 
 **Important:** The ACP displays the last 30 classifications. Click **View message** beside a post ID to open it in a new tab for visual verification. Links use the saved post ID for both scheduled and manual scans, including older audit rows. If the post is no longer found in phpBB, the row displays a notice; opening the link cannot restore a permanently deleted post. Per-result feedback and restoration are not yet available in the extension. Revert soft-deleted posts through phpBB moderation tools. Do not enable auto-hide until you have reviewed representative results.
 
+### If new posts are missing from the results
+
+In the ACP, check **Scan status** for the last scan attempt and whether the next scan is due. Use **Scan now** to process one batch immediately with the saved settings; it uses the same phpBB cron lock as scheduled jobs. Keep automatic hiding disabled while diagnosing. The batch may take several minutes.
+
+The table shows up to 30 results and the total number of classified posts. It keeps one row per post, not one per scan. Refresh the page to see updated results. A scan with no eligible posts does not add rows.
+
+For new posts to qualify, they must be approved, in an approved topic, in a selected public forum readable by guests, and within the lookback period. Excluded users and password-protected forums are skipped. If new posts qualify but **Scan now** reports zero, check the PHP server logs for scanner failures.
+
+If manual scanning works but the last scheduled attempt remains old, check phpBB cron delivery. Page-triggered cron relies on visits to the forum; the ACP alone does not trigger it. With system cron enabled, the hosting task must execute phpBB cron, and the API key must be available to CLI PHP as well as web PHP. A key set in Apache's `.htaccess` does not configure CLI PHP.
+
+To revisit older posts or include older posts after expanding the selected forums/lookback period, tick **Re-scan lookback period** and save. This resets the cursor and can make new paid API calls for previously classified posts.
+
 ### Privacy
 
 Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not submit a `store` flag. No email address or IP address is intentionally included, though user-authored post text may itself contain personal data. Opt in only to appropriate public forums, document processing under GDPR, and obtain any necessary approvals.
@@ -81,6 +93,7 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
 php tests/scanner_test.php
+php tests/acp_test.php
 php tests/post_links_test.php
 python3 tests/package_test.py
 ```
