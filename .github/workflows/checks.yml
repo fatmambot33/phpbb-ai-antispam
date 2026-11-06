@@ -23,6 +23,8 @@ jobs:
         run: php tests/classifier_test.php
       - name: Scanner regression tests
         run: php tests/scanner_test.php
+      - name: Audit post link regression tests
+        run: php tests/post_links_test.php
       - name: Install package regression test
         run: python3 tests/package_test.py
       - name: Composer metadata

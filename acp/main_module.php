@@ -47,7 +47,7 @@ class main_module
         }
 
         $sql = 'SELECT r.post_id, r.checked_at, r.classification, r.confidence, r.spam_probability, r.provider_confidence,
-                       r.reason, r.action_taken, p.topic_id
+                       r.reason, r.action_taken, p.post_id AS existing_post_id
                 FROM ' . $table_prefix . 'bca_antispam_results r
                 LEFT JOIN ' . POSTS_TABLE . ' p ON r.post_id = p.post_id
                 ORDER BY r.checked_at DESC, r.post_id DESC';
@@ -64,7 +64,10 @@ class main_module
                 'PROVIDER_CONFIDENCE' => (int) $row['provider_confidence'],
                 'REASON' => htmlspecialchars($row['reason'], ENT_QUOTES, 'UTF-8'),
                 'ACTION' => htmlspecialchars($row['action_taken'], ENT_QUOTES, 'UTF-8'),
-                'U_POST' => $row['topic_id'] ? append_sid($phpbb_root_path . 'viewtopic.' . $phpEx, 'p=' . $post_id) . '#p' . $post_id : '',
+                // The audit post ID is sufficient for phpBB's canonical permalink.
+                // Keep it even when the live-post lookup no longer matches.
+                'U_POST' => $post_id > 0 ? append_sid($phpbb_root_path . 'viewtopic.' . $phpEx, 'p=' . $post_id) . '#p' . $post_id : '',
+                'S_POST_MISSING' => empty($row['existing_post_id']),
             ]);
         }
         $db->sql_freeresult($result);

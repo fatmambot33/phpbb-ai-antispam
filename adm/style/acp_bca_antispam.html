@@ -28,7 +28,7 @@
     <tbody>
     <!-- BEGIN result -->
     <tr>
-        <td><!-- IF result.U_POST --><a href="{result.U_POST}" target="_blank" rel="noopener noreferrer" title="{L_ACP_BCA_ANTISPAM_NEW_TAB}">#{result.POST_ID} — {L_ACP_BCA_ANTISPAM_VIEW_MESSAGE}</a><!-- ELSE -->#{result.POST_ID}<!-- ENDIF --></td>
+        <td><!-- IF result.U_POST --><a href="{result.U_POST}" target="_blank" rel="noopener noreferrer" title="{L_ACP_BCA_ANTISPAM_NEW_TAB}">#{result.POST_ID} — {L_ACP_BCA_ANTISPAM_VIEW_MESSAGE}</a><!-- ELSE -->#{result.POST_ID}<!-- ENDIF --><!-- IF result.S_POST_MISSING --><br /><span>{L_ACP_BCA_ANTISPAM_POST_MISSING}</span><!-- ENDIF --></td>
         <td>{result.DATE}</td><td>{result.CLASSIFICATION}</td><td>{result.CONFIDENCE}</td>
         <td>{result.SPAM_PROBABILITY}%</td><td>{result.PROVIDER_CONFIDENCE}%</td><td>{result.REASON}</td><td>{result.ACTION}</td>
     </tr>
