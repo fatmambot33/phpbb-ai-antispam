@@ -25,6 +25,8 @@ jobs:
         run: php tests/scanner_test.php
       - name: ACP scan and results regression tests
         run: php tests/acp_test.php
+      - name: Audit post link regression tests
+        run: php tests/post_links_test.php
       - name: Install package regression test
         run: python3 tests/package_test.py
       - name: Composer metadata

@@ -57,7 +57,7 @@ namespace {
             return (object) ['rows' => array_fill(0, $limit, [
                 'post_id' => 1, 'checked_at' => 1, 'classification' => 'legitimate',
                 'confidence' => 99, 'spam_probability' => 0, 'provider_confidence' => 99,
-                'reason' => 'fixture', 'action_taken' => 'observed', 'topic_id' => 2,
+                'reason' => 'fixture', 'action_taken' => 'observed', 'topic_id' => 2, 'existing_post_id' => 1,
             ])];
         }
         public function sql_fetchrow($result) { return array_shift($result->rows); }

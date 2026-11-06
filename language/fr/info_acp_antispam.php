@@ -25,4 +25,5 @@ $lang = array_merge($lang, [
     'ACP_BCA_ANTISPAM_SCAN_COMPLETE' => 'Analyse terminée : %d message(s) classifié(s). Si zéro, aucun message éligible traité ; vérifiez les rubriques, la période et les journaux serveur si des messages manquent.',
     'ACP_BCA_ANTISPAM_RESULTS_SUMMARY' => 'Affichage de %1$d sur %2$d messages classifiés (les 30 derniers au maximum).',
     'ACP_BCA_ANTISPAM_RESULTS_HELP' => 'Un résultat est conservé par message. Les messages inchangés ne sont pas réanalysés automatiquement. Pour reprendre les anciens messages, ajustez la période et cochez Réanalyser la période, puis enregistrez. Actualisez la page pour voir les nouveaux résultats.',
+    'ACP_BCA_ANTISPAM_POST_MISSING' => 'Message introuvable dans la base actuelle du forum. Le lien peut afficher un avis de message inexistant.',
 ]);

@@ -25,4 +25,5 @@ $lang = array_merge($lang, [
     'ACP_BCA_ANTISPAM_SCAN_COMPLETE' => 'Scan finished: %d post(s) classified. If zero, no eligible posts were processed; check forum selection, lookback period and server logs if posts are missing.',
     'ACP_BCA_ANTISPAM_RESULTS_SUMMARY' => 'Showing %1$d of %2$d classified posts (latest 30 maximum).',
     'ACP_BCA_ANTISPAM_RESULTS_HELP' => 'One result is kept per post. Unchanged posts are not routinely reclassified. To revisit older posts, adjust the lookback period and select Re-scan lookback period, then save. Refresh this page to see new results.',
+    'ACP_BCA_ANTISPAM_POST_MISSING' => 'Post not found in the current forum database. The link may show a missing-post notice.',
 ]);
