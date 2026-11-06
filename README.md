@@ -59,7 +59,7 @@ To update, back up the database and extension files, disable **AI Anti-Spam** in
 
 To remove it permanently, disable it, choose **Delete data** in phpBB's extension manager, then remove `ext/bca/antispam/`. Deleting data removes the extension's settings and audit records; it does not restore posts previously hidden by the extension. Restore those through phpBB's moderation tools first if needed.
 
-**Important:** The ACP displays the last 30 classifications. Click **View message** beside a post ID to open it in a new tab for visual verification. Per-result feedback and restoration are not yet available in the extension. Revert soft-deleted posts through phpBB moderation tools. Do not enable auto-hide until you have reviewed representative results.
+**Important:** The ACP displays the last 30 classifications. Click **View message** beside a post ID to open it in a new tab for visual verification. Links use the saved post ID for both scheduled and manual scans, including older audit rows. If the post is no longer found in phpBB, the row displays a notice; opening the link cannot restore a permanently deleted post. Per-result feedback and restoration are not yet available in the extension. Revert soft-deleted posts through phpBB moderation tools. Do not enable auto-hide until you have reviewed representative results.
 
 ### Privacy
 
@@ -81,6 +81,7 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
 php tests/scanner_test.php
+php tests/post_links_test.php
 python3 tests/package_test.py
 ```
 
