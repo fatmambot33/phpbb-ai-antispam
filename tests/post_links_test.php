@@ -7,12 +7,14 @@ function check($condition, $message)
 {
     if (!$condition) { throw new RuntimeException($message); }
 }
+function utf8_htmlspecialchars($value) { return htmlspecialchars($value, ENT_COMPAT, 'UTF-8'); }
 function add_form_key($name) {}
 function append_sid($url, $query) { return $url . '?' . $query; }
 
 class link_request
 {
     public function is_set_post($name) { return false; }
+    public function server($name, $default = '') { return $default; }
 }
 class link_user
 {

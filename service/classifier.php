@@ -9,6 +9,13 @@ namespace bca\antispam\service;
 
 class classifier
 {
+    private $request;
+
+    public function __construct(?\phpbb\request\request_interface $request = null)
+    {
+        $this->request = $request;
+    }
+
     private const MODEL = 'gpt-6-luna';
     private const ENDPOINT = 'https://api.openai.com/v1/decisions';
 
@@ -22,7 +29,7 @@ class classifier
     {
         try
         {
-            $key = getenv('BCA_ANTISPAM_OPENAI_API_KEY');
+            $key = $this->request ? $this->request->server('BCA_ANTISPAM_OPENAI_API_KEY', '') : '';
             if (!$key)
             {
                 return self::unavailable('missing_api_key');

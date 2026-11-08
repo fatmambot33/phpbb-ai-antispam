@@ -48,13 +48,10 @@ assert_invalid('{"answers":[{"type":"choice","name":"forum_spam","choice":"spam"
 echo "Decisions API classifier contract tests passed\n";
 
 // Missing credentials and budget exhaustion are UNCERTAIN, never spam.
-$old_key = getenv('BCA_ANTISPAM_OPENAI_API_KEY');
-putenv('BCA_ANTISPAM_OPENAI_API_KEY');
 $failed = (new classifier())->classify('BMW', 'Spam looking content');
 assert_true($failed['classification'] === 'uncertain', 'Absent key must be uncertain');
 assert_true($failed['error_code'] === 'missing_api_key', 'Missing key has a stable audit code');
 assert_true($failed['confidence'] === 0 && $failed['spam_probability'] === 0, 'Error must not claim spam certainty');
-if ($old_key !== false) { putenv('BCA_ANTISPAM_OPENAI_API_KEY=' . $old_key); }
 assert_true(classifier::http_error_code(429, '{"error":{"code":"insufficient_quota"}}') === 'budget_exceeded', 'Quota exhaustion must be separate from rate limit');
 assert_true(classifier::http_error_code(429, '{"error":{"code":"rate_limit_exceeded"}}') === 'rate_limited', 'Rate limit classification');
 assert_true(classifier::http_error_code(500, '') === 'provider_error', 'Provider error classification');

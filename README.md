@@ -92,6 +92,7 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 ```bash
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
+php tests/credentials_test.php
 php tests/scanner_test.php
 php tests/acp_test.php
 php tests/post_links_test.php
@@ -103,6 +104,12 @@ python3 tests/package_test.py
 The repository root is the extension root, following the official [phpBB Board Announcements extension](https://github.com/phpbb-extensions/boardannouncements). Clone it directly into `ext/bca/antispam/` for development; a second nested extension directory is unnecessary.
 
 `scripts/package.py` builds a reproducible install ZIP containing the runtime directories, metadata, license and user documentation. Only tracked runtime files are included; common deployment-only filenames are rejected. Tests, build scripts and GitHub configuration are excluded. Building requires Git and a Git checkout. `.gitattributes` also excludes development files from Git archives. CI verifies the install path, file contents and reproducibility.
+
+## phpBB pre-validation
+
+CI validates the actual install ZIP with the official [phpBB Extension Pre-Validator](https://github.com/phpbb/epv), pinned to a reviewed revision. The gate fails on all findings, including ordinary errors and warnings that EPV's own CLI can report without a failing exit status.
+
+See [phpBB validation preparation](https://github.com/fatmambot33/phpbb-ai-antispam/blob/main/docs/PHPBB_VALIDATION.md) for local commands and the remaining submission work. An EPV pass is not official phpBB approval or a completed integration test.
 
 ## Security reports
 

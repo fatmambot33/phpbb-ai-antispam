@@ -1,6 +1,8 @@
 services:
     bca.antispam.classifier:
         class: bca\antispam\service\classifier
+        arguments:
+            - '@request'
 
     bca.antispam.scanner:
         class: bca\antispam\service\scanner
@@ -17,6 +19,7 @@ services:
         arguments:
             - '@config'
             - '@bca.antispam.scanner'
+            - '@request'
         calls:
             - [set_name, [bca.antispam.cron.task.scan]]
         tags:

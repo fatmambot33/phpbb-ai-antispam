@@ -45,8 +45,8 @@ class scanner
                        t.topic_title, t.topic_first_post_id, t.topic_last_post_id
                 FROM ' . $this->prefix . 'posts p
                 INNER JOIN ' . $this->prefix . 'topics t ON p.topic_id = t.topic_id
-                WHERE p.post_id > ' . $cursor . '
-                  AND p.post_time >= ' . $cutoff . '
+                WHERE p.post_id > ' . (int) $cursor . '
+                  AND p.post_time >= ' . (int) $cutoff . '
                   AND p.post_visibility = ' . (int) ITEM_APPROVED . '
                   AND t.topic_visibility = ' . (int) ITEM_APPROVED . '
                   AND ' . $this->db->sql_in_set('p.forum_id', $forums) . '
@@ -71,7 +71,7 @@ class scanner
                           FROM ' . $this->prefix . 'posts p
                           INNER JOIN ' . $this->prefix . 'topics t ON p.topic_id = t.topic_id
                           INNER JOIN ' . $this->prefix . 'bca_antispam_results r ON p.post_id = r.post_id
-                          WHERE p.post_id <= ' . $cursor . '
+                          WHERE p.post_id <= ' . (int) $cursor . '
                             AND p.post_edit_time >= r.checked_at
                             AND p.post_visibility = ' . (int) ITEM_APPROVED . '
                             AND t.topic_visibility = ' . (int) ITEM_APPROVED . '
@@ -136,7 +136,7 @@ class scanner
     private function soft_delete_if_unchanged(array $post, $fingerprint)
     {
         $id = (int) $post['post_id'];
-        $sql = 'SELECT post_text, post_subject, post_visibility FROM ' . $this->prefix . 'posts WHERE post_id = ' . $id;
+        $sql = 'SELECT post_text, post_subject, post_visibility FROM ' . $this->prefix . 'posts WHERE post_id = ' . (int) $id;
         $r = $this->db->sql_query($sql);
         $fresh = $this->db->sql_fetchrow($r);
         $this->db->sql_freeresult($r);
@@ -196,7 +196,7 @@ class scanner
 
     private function is_public_forum($forum_id)
     {
-        $r = $this->db->sql_query('SELECT forum_password FROM ' . $this->prefix . 'forums WHERE forum_id = ' . $forum_id);
+        $r = $this->db->sql_query('SELECT forum_password FROM ' . $this->prefix . 'forums WHERE forum_id = ' . (int) $forum_id);
         $forum = $this->db->sql_fetchrow($r);
         $this->db->sql_freeresult($r);
         if (!$forum || $forum['forum_password'] !== '')

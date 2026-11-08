@@ -5,6 +5,11 @@ namespace phpbb\config {
     }
 }
 namespace phpbb\cron\task { class base {} }
+namespace phpbb\request {
+    interface request_interface {
+        public function server($name, $default = '');
+    }
+}
 namespace bca\antispam\service {
     class scanner {
         public $calls = 0;
@@ -23,6 +28,7 @@ namespace {
     function check($value, $message) {
         if (!$value) { throw new \RuntimeException($message); }
     }
+    function utf8_htmlspecialchars($value) { return htmlspecialchars($value, ENT_COMPAT, 'UTF-8'); }
     function add_form_key($name) {}
     function check_form_key($name) { return $GLOBALS['valid_form']; }
     function adm_back_link($url) { return ''; }
@@ -34,8 +40,10 @@ namespace {
         }
         return false;
     });
-    class request {
+    class request implements \phpbb\request\request_interface {
         public $scan = false;
+        public $key = '';
+        public function server($name, $default = '') { return $name === 'BCA_ANTISPAM_OPENAI_API_KEY' ? $this->key : $default; }
         public function is_set_post($name) { return $name === 'scan_now' && $this->scan; }
     }
     class user {
@@ -57,7 +65,7 @@ namespace {
             return (object) ['rows' => array_fill(0, $limit, [
                 'post_id' => 1, 'checked_at' => 1, 'classification' => 'legitimate',
                 'confidence' => 99, 'spam_probability' => 0, 'provider_confidence' => 99,
-                'reason' => 'fixture', 'action_taken' => 'observed', 'topic_id' => 2, 'existing_post_id' => 1,
+                'reason' => '<script>alert("x")</script> & café', 'action_taken' => 'observed', 'topic_id' => 2, 'existing_post_id' => 1,
             ])];
         }
         public function sql_fetchrow($result) { return array_shift($result->rows); }
@@ -97,7 +105,7 @@ namespace {
     $phpbb_root_path = '../';
     $phpEx = 'php';
     $scanner = new \bca\antispam\service\scanner();
-    $task = new \bca\antispam\cron\task\scan($config, $scanner);
+    $task = new \bca\antispam\cron\task\scan($config, $scanner, $request);
     $lock = new lock();
     $phpbb_container = new container();
     $phpbb_container->services = ['bca.antispam.cron.task.scan' => $task, 'cron.lock_db' => $lock];
@@ -108,12 +116,13 @@ namespace {
     check(count($template->rows) === 30, 'More than five classifications must display');
     check($template->vars['RESULTS_SUMMARY'] === 'ACP_BCA_ANTISPAM_RESULTS_SUMMARY:30,35', 'Wrong total or displayed result count');
     check($template->vars['S_SCAN_DUE'], 'Never-run task should be due');
+    check($template->rows[0]['REASON'] === '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; café',
+        'Untrusted audit reason was not escaped as UTF-8 text');
 
     $request->scan = true;
-    $old_key = getenv('BCA_ANTISPAM_OPENAI_API_KEY');
     try {
         // Dummy key is only consumed by the runnable check; scanner is stubbed.
-        putenv('BCA_ANTISPAM_OPENAI_API_KEY=fixture');
+        $request->key = 'fixture';
         $valid_form = false;
         invoke_notice($module, 'FORM_INVALID');
         check($scanner->calls === 0 && $lock->attempts === 0, 'CSRF failure must not start scanning');
@@ -122,10 +131,10 @@ namespace {
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_UNAVAILABLE');
         check($scanner->calls === 0, 'Disabled scanner was run');
         $config['bca_antispam_enabled'] = 1;
-        putenv('BCA_ANTISPAM_OPENAI_API_KEY');
+        $request->key = '';
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_UNAVAILABLE');
         check($scanner->calls === 0, 'Scanner ran without an API key');
-        putenv('BCA_ANTISPAM_OPENAI_API_KEY=fixture');
+        $request->key = 'fixture';
         $lock->available = false;
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_BUSY');
         check($scanner->calls === 0 && $lock->releases === 0, 'Busy cron lock was ignored or released');
@@ -141,7 +150,6 @@ namespace {
         }
         check($lock->releases === 2, 'Cron lock leaked after failure');
     } finally {
-        putenv($old_key === false ? 'BCA_ANTISPAM_OPENAI_API_KEY' : 'BCA_ANTISPAM_OPENAI_API_KEY=' . $old_key);
         restore_error_handler();
     }
     echo "ACP manual scan, cron locking and 30-row results tests passed\n";

@@ -21,6 +21,8 @@ jobs:
         run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Classification parser tests
         run: php tests/classifier_test.php
+      - name: Request credential regression tests
+        run: php tests/credentials_test.php
       - name: Scanner regression tests
         run: php tests/scanner_test.php
       - name: ACP scan and results regression tests
@@ -31,3 +33,28 @@ jobs:
         run: python3 tests/package_test.py
       - name: Composer metadata
         run: php -r '$v = json_decode(file_get_contents("composer.json"), true, 512, JSON_THROW_ON_ERROR); if ($v["type"] !== "phpbb-extension") exit(1);'
+  epv:
+    name: phpBB Extension Pre-Validator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, tokenizer, ctype, iconv
+          tools: composer:2
+      - name: Install pinned official EPV
+        run: |
+          epv_revision=$(cat scripts/epv-revision.txt)
+          git init "$RUNNER_TEMP/phpbb-epv"
+          git -C "$RUNNER_TEMP/phpbb-epv" remote add origin https://github.com/phpbb/epv.git
+          git -C "$RUNNER_TEMP/phpbb-epv" fetch --depth=1 origin "$epv_revision"
+          git -C "$RUNNER_TEMP/phpbb-epv" checkout --detach FETCH_HEAD
+          composer install --working-dir="$RUNNER_TEMP/phpbb-epv" --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-plugins
+      - name: Build and validate the install ZIP
+        run: |
+          python3 scripts/package.py
+          python3 -m zipfile -e dist/bca-antispam-*.zip "$RUNNER_TEMP/antispam-install"
+          php scripts/epv.php "$RUNNER_TEMP/phpbb-epv" "$RUNNER_TEMP/antispam-install"
+      - name: Verify errors and warnings fail the gate
+        run: python3 tests/epv_test.py --epv-root "$RUNNER_TEMP/phpbb-epv"
