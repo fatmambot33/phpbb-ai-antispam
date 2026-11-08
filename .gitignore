@@ -7,3 +7,19 @@ vendor/
 .phpunit.result.cache
 dist/
 __pycache__/
+
+# Deployment-only configuration, credentials and database exports.
+.env.*
+.htaccess
+.htpasswd
+/config.php
+*.sql
+*.sql.gz
+*.sql.bz2
+*.sqlite
+*.sqlite3
+*.pem
+*.key
+*.p12
+*.pfx
+/backups/

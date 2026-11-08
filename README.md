@@ -102,7 +102,11 @@ python3 tests/package_test.py
 
 The repository root is the extension root, following the official [phpBB Board Announcements extension](https://github.com/phpbb-extensions/boardannouncements). Clone it directly into `ext/bca/antispam/` for development; a second nested extension directory is unnecessary.
 
-`scripts/package.py` builds a reproducible install ZIP containing the runtime directories, metadata, license and user documentation. Tests, build scripts, GitHub configuration and local credentials are excluded. `.gitattributes` also excludes development files from Git archives. CI verifies the install path, file contents and reproducibility.
+`scripts/package.py` builds a reproducible install ZIP containing the runtime directories, metadata, license and user documentation. Only tracked runtime files are included; common deployment-only filenames are rejected. Tests, build scripts and GitHub configuration are excluded. Building requires Git and a Git checkout. `.gitattributes` also excludes development files from Git archives. CI verifies the install path, file contents and reproducibility.
+
+## Security reports
+
+Follow [SECURITY.md](SECURITY.md) to report vulnerabilities privately. Do not post API keys, session IDs or private forum content in issues.
 
 ## Roadmap
 
