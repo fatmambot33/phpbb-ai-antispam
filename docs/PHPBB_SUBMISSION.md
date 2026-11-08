@@ -13,7 +13,7 @@ This is a preparation pack, not a submitted or approved phpBB extension. Version
 | Package source commit | 5357ec0930f2fd5095f5c6df3411a32be16f53a0 |
 | Install ZIP | bca-antispam-0.3.0-beta.zip |
 | ZIP SHA-256 | a0606c3c74eaa75a3916b4f71d6b1b0ed8ffc23d9e856c701df261425c6fa629 |
-| Package download | [GitHub draft release](https://github.com/fatmambot33/phpbb-ai-antispam/releases/tag/untagged-abcf0c1636736ed7ec8a) — requires repository write access while a draft |
+| Package download | [GitHub releases](https://github.com/fatmambot33/phpbb-ai-antispam/releases) → AI Anti-Spam 0.3.0-beta — test package; requires repository write access while a draft |
 | Source | https://github.com/fatmambot33/phpbb-ai-antispam |
 | Support / bugs | https://github.com/fatmambot33/phpbb-ai-antispam/issues |
 | Private security reports | [Security policy](../SECURITY.md) |
