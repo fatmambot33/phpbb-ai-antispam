@@ -8,8 +8,8 @@
 - [x] Reversible soft-delete via phpBB content visibility API
 - [x] Classification results retained in a dedicated table
 - [x] PHP syntax / JSON parser tests in CI
-- [ ] Integration verification against phpBB 3.3 and MariaDB
-- [ ] Integration tests for topic starter, last reply, restored post, concurrent editing
+- [x] Integration verification against pinned phpBB 3.3.19 and MariaDB 10.11
+- [x] Integration tests for topic starter, last reply, restored post, concurrent editing
 
 ## V0.2 — Configuration and moderator experience
 - [x] Configurable forum context with upgrade preservation
@@ -27,4 +27,4 @@
 - [ ] Backfill with pause/resume and visible progress
 - [ ] Privacy minimization and configurable data retention
 - [x] Official phpBB Extension Pre-Validator CI on the install package
-- [ ] phpBB test-framework integration CI
+- [x] Real phpBB/MariaDB install, scanning, moderation and lifecycle CI
