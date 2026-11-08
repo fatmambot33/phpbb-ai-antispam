@@ -1,4 +1,5 @@
 <?php
+namespace phpbb\config { class config extends \ArrayObject {} }
 namespace phpbb\request {
     interface request_interface {
         public function server($name, $default = '');
@@ -39,7 +40,8 @@ namespace {
         }
     }
     $request = new server_request();
-    $classifier = new \bca\antispam\service\classifier($request);
+    $config = new \phpbb\config\config(['bca_antispam_forum_context' => 'Aquarium keepers & récifs']);
+    $classifier = new \bca\antispam\service\classifier($request, $config);
     $missing = $classifier->classify('Test', 'Test');
     check($missing['classification'] === 'uncertain' && $missing['error_code'] === 'missing_api_key',
         'Missing request credential must fail open');
@@ -56,6 +58,12 @@ namespace {
         $GLOBALS['captured_options'][CURLOPT_HTTPHEADER], true), 'Wrong authorization header');
     check($GLOBALS['captured_options'][CURLOPT_SSL_VERIFYPEER] === true &&
         $GLOBALS['captured_options'][CURLOPT_SSL_VERIFYHOST] === 2, 'TLS verification was disabled');
+    $payload = json_decode($GLOBALS['captured_options'][CURLOPT_POSTFIELDS], true);
+    check(strpos($payload['input'], 'Forum: Aquarium keepers & récifs') === 0, 'Saved context did not reach the real request payload');
+    $config['bca_antispam_forum_context'] = 'Woodworking hobbyists';
+    $classifier->classify('Test', 'Test');
+    $payload = json_decode($GLOBALS['captured_options'][CURLOPT_POSTFIELDS], true);
+    check(strpos($payload['input'], 'Forum: Woodworking hobbyists') === 0, 'Context changes were not used on subsequent requests');
     check(array_unique($request->queried) === ['BCA_ANTISPAM_OPENAI_API_KEY'],
         'Unexpected credential source was queried');
     echo "phpBB request credential and classifier transport tests passed\n";

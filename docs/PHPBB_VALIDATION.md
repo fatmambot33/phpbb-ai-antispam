@@ -13,7 +13,7 @@ From the extension checkout, with PHP, Composer, Python and Git installed:
     git -C "$epv_checkout" checkout "$(cat scripts/epv-revision.txt)"
     composer install --working-dir="$epv_checkout" --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-plugins
     python3 scripts/package.py
-    python3 -m zipfile -e dist/bca-antispam-0.1.0-beta.zip /tmp/phpbb-antispam-install
+    python3 -m zipfile -e dist/bca-antispam-0.2.0-beta.zip /tmp/phpbb-antispam-install
     php scripts/epv.php "$epv_checkout" /tmp/phpbb-antispam-install
     python3 tests/epv_test.py --epv-root "$epv_checkout"
 
@@ -32,10 +32,18 @@ When updating EPV, update its revision pin deliberately, review its upstream cha
 
 After updating extension files, purge phpBB's cache so the container picks up the request service injected into the classifier and cron task. Leave automatic hiding off during testing. If using CLI cron, configure its process environment separately from Apache .htaccess.
 
+## Forum context and ACP languages
+
+Version 0.2.0-beta adds a bounded forum-context setting, a migration preserving the previous BMW context for existing installations, and a generic default for fresh installations. All ACP labels and standard decision/action/reason summaries have English and French translations. Original audit explanations remain available without changing stored evidence.
+
+The context migration test uses the actual config.add tool and config container from a pinned phpBB 3.3.19 checkout. It checks fresh-install, legacy-upgrade and repeated/custom-value cases; it does not exercise the full database migrator.
+
+CI loads that sparse fixture into .phpbb-fixture. To run its check locally after obtaining the same checkout:
+
+    php tests/context_migration_test.php /path/to/phpbb-checkout
+
 ## Remaining work before submission
 
-- Make the hardcoded BMW forum context configurable.
-- Translate the remaining hardcoded ACP text through language files.
 - Run real phpBB 3.3.19/database integration tests for install/disable/enable/update, scheduled and manual scanning, private/password-protected forums, edited posts, API failures, first/last post counters, deletion/restoration and concurrent cron execution.
 - Review external API billing, data transmission/retention disclosures and credential setup with the submission.
 - Prepare an appropriately versioned release, support details and redacted screenshots, then review current phpBB submission policies.

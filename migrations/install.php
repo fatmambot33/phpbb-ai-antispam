@@ -44,6 +44,7 @@ class install extends \phpbb\db\migration\migration
     {
         return [
             ['config.add', ['bca_antispam_enabled', 0]],
+            ['config.add', ['bca_antispam_forum_context', '']],
             ['config.add', ['bca_antispam_auto_hide', 0]],
             ['config.add', ['bca_antispam_forum_ids', '']],
             ['config.add', ['bca_antispam_excluded_user_ids', '']],

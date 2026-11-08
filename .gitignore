@@ -23,3 +23,6 @@ __pycache__/
 *.p12
 *.pfx
 /backups/
+
+# Sparse phpBB core fixture used only by CI migration tests.
+/.phpbb-fixture/
