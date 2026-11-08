@@ -44,6 +44,7 @@ CI loads that sparse fixture into .phpbb-fixture. To run its check locally after
 
 ## Remaining work before submission
 
+- Use the [submission pack](PHPBB_SUBMISSION.md) for the prepared description, external-service disclosures, package identity, automated evidence and pending forum acceptance record.
 - Run the [phpBB/MariaDB integration suite](INTEGRATION_TESTING.md) and review its exact coverage. The deterministic cases cover installation/lifecycle/upgrade, scanning, moderation, ACLs, CSRF, Twig rendering and cron-lock exclusion. Concurrent scanner processes, real provider calls and actual email delivery remain outside that suite.
 - Review external API billing, data transmission/retention disclosures and credential setup with the submission.
 - Prepare an appropriately versioned release, support details and redacted screenshots, then review current phpBB submission policies.
