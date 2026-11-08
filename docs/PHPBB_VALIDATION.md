@@ -13,7 +13,7 @@ From the extension checkout, with PHP, Composer, Python and Git installed:
     git -C "$epv_checkout" checkout "$(cat scripts/epv-revision.txt)"
     composer install --working-dir="$epv_checkout" --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-plugins
     python3 scripts/package.py
-    python3 -m zipfile -e dist/bca-antispam-0.2.0-beta.zip /tmp/phpbb-antispam-install
+    python3 -m zipfile -e dist/bca-antispam-0.3.0-beta.zip /tmp/phpbb-antispam-install
     php scripts/epv.php "$epv_checkout" /tmp/phpbb-antispam-install
     python3 tests/epv_test.py --epv-root "$epv_checkout"
 
@@ -26,11 +26,11 @@ When updating EPV, update its revision pin deliberately, review its upstream cha
 ## Changes made for pre-validation
 
 - Ship the GPL text as license.txt, as required by EPV.
-- Use phpBB's request service to read the existing BCA_ANTISPAM_OPENAI_API_KEY server/environment variable. In phpBB 3.3.19, request::server() uses server values first and falls back to the process environment. The key remains outside the extension database and ACP.
+- Version 0.3.0-beta manages the key only through the ACP and stores it in the uncached config_text service. It never reads environment keys. The saved key is not redisplayed; database backups contain the unencrypted value.
 - Use utf8_htmlspecialchars() for ACP audit output.
 - Cast integer query values explicitly where they enter SQL.
 
-After updating extension files, purge phpBB's cache so the container picks up the request service injected into the classifier and cron task. Leave automatic hiding off during testing. If using CLI cron, configure its process environment separately from Apache .htaccess.
+After updating extension files, enable the extension to apply migrations and purge phpBB's cache so the container uses the database-backed key service. Save the key once through the ACP. Both web and CLI scans use it. Leave automatic hiding off during testing.
 
 ## Forum context and ACP languages
 

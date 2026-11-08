@@ -5,20 +5,20 @@ class scan extends \phpbb\cron\task\base
 {
     private $config;
     private $scanner;
-    private $request;
+    private $api_key;
 
-    public function __construct(\phpbb\config\config $config, \bca\antispam\service\scanner $scanner, ?\phpbb\request\request_interface $request = null)
+    public function __construct(\phpbb\config\config $config, \bca\antispam\service\scanner $scanner, ?\bca\antispam\service\api_key $api_key = null)
     {
         $this->config = $config;
         $this->scanner = $scanner;
-        $this->request = $request;
+        $this->api_key = $api_key;
     }
 
     public function is_runnable()
     {
         return (bool) $this->config['bca_antispam_enabled'] &&
             (bool) $this->config['bca_antispam_forum_ids'] &&
-            $this->request !== null && (bool) $this->request->server('BCA_ANTISPAM_OPENAI_API_KEY', '');
+            $this->api_key !== null && $this->api_key->is_configured();
     }
 
     public function should_run()

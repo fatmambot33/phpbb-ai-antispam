@@ -4,6 +4,22 @@
 <!-- IF not API_KEY_SET -->
 <div class="errorbox"><p>{L_ACP_BCA_ANTISPAM_MISSING_KEY}</p></div>
 <!-- ENDIF -->
+<fieldset>
+<legend>{L_ACP_BCA_ANTISPAM_CREDENTIALS}</legend>
+<dl><dt>{L_ACP_BCA_ANTISPAM_KEY_STATUS}</dt><dd><!-- IF API_KEY_SET -->{L_ACP_BCA_ANTISPAM_KEY_CONFIGURED}<!-- ELSE -->{L_ACP_BCA_ANTISPAM_KEY_NOT_CONFIGURED}<!-- ENDIF --></dd></dl>
+<p>{L_ACP_BCA_ANTISPAM_KEY_STORAGE_HELP}</p>
+<form method="post" action="{U_ACTION}">
+<dl><dt><label for="new_api_key">{L_ACP_BCA_ANTISPAM_NEW_KEY}</label></dt><dd><input id="new_api_key" type="password" name="new_api_key" value="" maxlength="1024" size="60" autocomplete="new-password" spellcheck="false" /><p>{L_ACP_BCA_ANTISPAM_NEW_KEY_HELP}</p></dd></dl>
+<p><input class="button1" type="submit" name="save_api_key" value="{L_ACP_BCA_ANTISPAM_SAVE_KEY}" /></p>
+{S_FORM_TOKEN}
+</form>
+<!-- IF API_KEY_SET -->
+<form method="post" action="{U_ACTION}">
+<p><input class="button2" type="submit" name="remove_api_key" value="{L_ACP_BCA_ANTISPAM_REMOVE_KEY}" /></p>
+{S_FORM_TOKEN}
+</form>
+<!-- ENDIF -->
+</fieldset>
 <form method="post" action="{U_ACTION}">
 <fieldset>
 <legend>{L_ACP_BCA_ANTISPAM_SCAN_SETTINGS}</legend>

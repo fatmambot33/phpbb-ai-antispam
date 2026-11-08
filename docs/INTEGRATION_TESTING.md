@@ -29,6 +29,8 @@ The runner accepts only local/container hosts and test database names beginning 
 
 The extension repository must include full Git history: the upgrade case extracts the pre-context 0.1.0-beta runtime at commit ad84ce8faa647be6cfd0183f726e44cad5f6d338 before upgrading to the current package.
 
+After each package replacement, the runner purges phpBB's cache before enabling the extension so the compiled service container matches the installed files.
+
 ## Outcomes and repeatability
 
 The expected case names are listed in tests/integration/cases.json. A successful PHP exit alone is insufficient: phpBB can render an error page and exit zero. Every phase must produce a fresh JSON report with the current run ID, the exact expected cases, passed outcomes and a nonzero assertion count.
@@ -49,13 +51,14 @@ Alternatively, provide another empty test database. Do not point the runner at a
 - Private, password-protected, unselected, unapproved and excluded-author filtering.
 - API budget-failure fallback to uncertain without hiding or adding stored notifications, and no retry of unchanged failed posts.
 - Core soft-deletion/restoration of latest replies, single-post topics and topic starters, with counters and first/last post fields checked.
+- ACP key save/preserve/remove using real CSRF and admin permissions, uncached database storage and cache/HTML non-disclosure.
 - Manual ACP scanning with real CSRF validation.
 - Real English/French Twig rendering, escaped context and audit post links.
 - Edits to previously audited posts are rediscovered and update one audit row.
 - Content edits during classification, with the changed post left visible and reclassified later.
 - Exclusion of a second worker while phpBB's database cron lock is held.
-- Disable/re-enable persistence.
-- Purge/reinstall only inside the disposable board, followed by a real upgrade from the pinned legacy runtime; audit data, scan flags and BMW-context migration are checked.
+- Disable/re-enable persistence of audit results, settings and the ACP key.
+- Purge/reinstall only inside the disposable board, followed by a real upgrade from the pinned legacy runtime; audit data, scan flags, BMW-context migration and absence of automatic environment-key import are checked.
 
 ## Limits
 

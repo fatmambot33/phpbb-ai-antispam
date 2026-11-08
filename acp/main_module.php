@@ -9,12 +9,40 @@ class main_module
 
     public function main($id, $mode)
     {
-        global $config, $request, $template, $user, $db, $table_prefix, $phpbb_root_path, $phpEx, $phpbb_container;
+        global $config, $request, $template, $user, $db, $table_prefix, $phpbb_root_path, $phpEx, $phpbb_container, $auth;
+
+        if (!$auth->acl_get('a_board'))
+        {
+            trigger_error('NOT_AUTHORISED', E_USER_WARNING);
+        }
+        $api_key = $phpbb_container->get('bca.antispam.api_key');
 
         $user->add_lang_ext('bca/antispam', 'info_acp_antispam');
         $this->tpl_name = 'acp_bca_antispam';
         $this->page_title = 'ACP_BCA_ANTISPAM_TITLE';
         add_form_key('bca_antispam_settings');
+
+        if ($request->is_set_post('save_api_key') || $request->is_set_post('remove_api_key'))
+        {
+            if (!check_form_key('bca_antispam_settings'))
+            {
+                trigger_error('FORM_INVALID', E_USER_WARNING);
+            }
+            if ($request->is_set_post('remove_api_key'))
+            {
+                $api_key->remove();
+                trigger_error($user->lang('ACP_BCA_ANTISPAM_KEY_REMOVED') . adm_back_link($this->u_action));
+            }
+            try
+            {
+                $changed = $api_key->replace(htmlspecialchars_decode($request->variable('new_api_key', '', false, \phpbb\request\request_interface::POST), ENT_COMPAT));
+            }
+            catch (\InvalidArgumentException $error)
+            {
+                trigger_error($user->lang('ACP_BCA_ANTISPAM_KEY_INVALID') . adm_back_link($this->u_action), E_USER_WARNING);
+            }
+            trigger_error($user->lang($changed ? 'ACP_BCA_ANTISPAM_KEY_SAVED' : 'ACP_BCA_ANTISPAM_KEY_UNCHANGED') . adm_back_link($this->u_action));
+        }
 
         if ($request->is_set_post('scan_now'))
         {
@@ -133,7 +161,7 @@ class main_module
             'FORUM_IDS' => $config['bca_antispam_forum_ids'],
             'EXCLUDED_USER_IDS' => $config['bca_antispam_excluded_user_ids'],
             'CURSOR' => (int) $config['bca_antispam_cursor'],
-            'API_KEY_SET' => $request->server('BCA_ANTISPAM_OPENAI_API_KEY', '') !== '',
+            'API_KEY_SET' => $api_key->is_configured(),
         ]);
     }
 

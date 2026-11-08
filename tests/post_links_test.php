@@ -1,5 +1,7 @@
 <?php
 // ACP regression: links come from persisted audit IDs, not a live topic lookup.
+require_once __DIR__ . '/api_key_fixture.php';
+require_once __DIR__ . '/../service/api_key.php';
 require_once __DIR__ . '/../acp/main_module.php';
 define('POSTS_TABLE', 'phpbb_posts');
 
@@ -51,6 +53,16 @@ class link_database
     public function sql_freeresult($result) {}
 }
 
+class link_auth {
+    public function acl_get($permission) { return true; }
+}
+class link_container {
+    public function get($name) {
+        return new \bca\antispam\service\api_key(new \phpbb\config\db_text());
+    }
+}
+$auth = new link_auth();
+$phpbb_container = new link_container();
 $config = [
     'bca_antispam_enabled' => 1, 'bca_antispam_auto_hide' => 0,
     'bca_antispam_threshold' => 95, 'bca_antispam_interval' => 120, 'bca_antispam_last_run' => 0,

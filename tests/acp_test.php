@@ -7,6 +7,7 @@ namespace phpbb\config {
 namespace phpbb\cron\task { class base {} }
 namespace phpbb\request {
     interface request_interface {
+        const POST = 1;
         public function server($name, $default = '');
     }
 }
@@ -22,6 +23,8 @@ namespace bca\antispam\service {
     }
 }
 namespace {
+    require_once __DIR__ . '/api_key_fixture.php';
+    require_once __DIR__ . '/../service/api_key.php';
     require_once __DIR__ . '/../cron/task/scan.php';
     require_once __DIR__ . '/../acp/main_module.php';
     define('POSTS_TABLE', 'phpbb_posts');
@@ -48,10 +51,15 @@ namespace {
         public $key = '';
         public function server($name, $default = '') { return $name === 'BCA_ANTISPAM_OPENAI_API_KEY' ? $this->key : $default; }
         public function is_set_post($name) { return ($name === 'scan_now' && $this->scan) || ($name === 'submit' && $this->submit) || array_key_exists($name, $this->values); }
-        public function variable($name, $default, $multibyte = false) {
+        public function variable($name, $default, $multibyte = false, $super_global = null) {
+            if ($name === 'new_api_key') { check($super_global === \phpbb\request\request_interface::POST, 'API key must be read only from POST'); }
             $value = $this->values[$name] ?? $default;
-            return $name === 'forum_context' ? htmlspecialchars($value, ENT_COMPAT, 'UTF-8') : $value;
+            return in_array($name, ['forum_context', 'new_api_key'], true) ? htmlspecialchars($value, ENT_COMPAT, 'UTF-8') : $value;
         }
+    }
+    class auth_fixture {
+        public $allowed = true;
+        public function acl_get($name) { return $this->allowed; }
     }
     class user {
         public function add_lang_ext($extension, $file) {}
@@ -112,10 +120,13 @@ namespace {
     $phpbb_root_path = '../';
     $phpEx = 'php';
     $scanner = new \bca\antispam\service\scanner();
-    $task = new \bca\antispam\cron\task\scan($config, $scanner, $request);
+    $storage = new \phpbb\config\db_text();
+    $api_key = new \bca\antispam\service\api_key($storage);
+    $auth = new auth_fixture();
+    $task = new \bca\antispam\cron\task\scan($config, $scanner, $api_key);
     $lock = new lock();
     $phpbb_container = new container();
-    $phpbb_container->services = ['bca.antispam.cron.task.scan' => $task, 'cron.lock_db' => $lock];
+    $phpbb_container->services = ['bca.antispam.api_key' => $api_key, 'bca.antispam.cron.task.scan' => $task, 'cron.lock_db' => $lock];
     $valid_form = true;
     $module = new \bca\antispam\acp\main_module();
     $module->u_action = 'admin.php';
@@ -127,6 +138,36 @@ namespace {
         'Untrusted audit reason was not escaped as UTF-8 text');
 
     try {
+        $request->values = ['save_api_key' => 1, 'new_api_key' => 'acp-fixture-key'];
+        $auth->allowed = false;
+        invoke_notice($module, 'NOT_AUTHORISED');
+        check(!$api_key->is_configured(), 'Unauthorized administrator changed key');
+        $auth->allowed = true;
+        $valid_form = false;
+        invoke_notice($module, 'FORM_INVALID');
+        check(!$api_key->is_configured(), 'Invalid CSRF saved a key');
+        $valid_form = true;
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_KEY_SAVED');
+        check($api_key->get() === 'acp-fixture-key', 'ACP did not save key');
+        check(!isset($config['bca_antispam_api_key']), 'Key entered globally cached config');
+        $request->values = ['save_api_key' => 1, 'new_api_key' => ''];
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_KEY_UNCHANGED');
+        check($api_key->get() === 'acp-fixture-key', 'Blank input erased key');
+        $request->values = ['save_api_key' => 1, 'new_api_key' => "invalid\r\nInjected: header"];
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_KEY_INVALID');
+        check($api_key->get() === 'acp-fixture-key', 'Invalid input replaced key');
+        $request->values = [];
+        $module->main('', 'settings');
+        check($template->vars['API_KEY_SET'] === true, 'Configured status missing');
+        check(strpos(json_encode($template->vars), 'acp-fixture-key') === false, 'Saved key reached template variables');
+        $request->values = ['remove_api_key' => 1];
+        $valid_form = false;
+        invoke_notice($module, 'FORM_INVALID');
+        check($api_key->is_configured(), 'Invalid CSRF removed key');
+        $valid_form = true;
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_KEY_REMOVED');
+        check(!$api_key->is_configured() && !$task->is_runnable(), 'Removal did not stop scanning');
+        $request->values = [];
         $request->submit = true;
         $request->values = ['forum_context' => '</textarea><script>alert("x")</script> & café' . str_repeat('é', 300),
             'enabled' => 1, 'forum_ids' => '2'];
@@ -154,7 +195,7 @@ namespace {
         $request->values = [];
         $request->scan = true;
         // Dummy key is only consumed by the runnable check; scanner is stubbed.
-        $request->key = 'fixture';
+        $api_key->replace('fixture');
         $valid_form = false;
         invoke_notice($module, 'FORM_INVALID');
         check($scanner->calls === 0 && $lock->attempts === 0, 'CSRF failure must not start scanning');
@@ -163,10 +204,10 @@ namespace {
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_UNAVAILABLE');
         check($scanner->calls === 0, 'Disabled scanner was run');
         $config['bca_antispam_enabled'] = 1;
-        $request->key = '';
+        $api_key->remove();
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_UNAVAILABLE');
         check($scanner->calls === 0, 'Scanner ran without an API key');
-        $request->key = 'fixture';
+        $api_key->replace('fixture');
         $lock->available = false;
         invoke_notice($module, 'ACP_BCA_ANTISPAM_SCAN_BUSY');
         check($scanner->calls === 0 && $lock->releases === 0, 'Busy cron lock was ignored or released');
