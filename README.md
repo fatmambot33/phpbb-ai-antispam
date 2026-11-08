@@ -123,6 +123,12 @@ CI validates the actual install ZIP with the official [phpBB Extension Pre-Valid
 
 See [phpBB validation preparation](https://github.com/fatmambot33/phpbb-ai-antispam/blob/main/docs/PHPBB_VALIDATION.md) for local commands and the remaining submission work. An EPV pass is not official phpBB approval or a completed integration test.
 
+## phpBB/database integration
+
+A separate CI job installs the packaged extension on a disposable phpBB 3.3.19/MariaDB 10.11 board. It checks scanning, ACL filtering, CSRF, real ACP rendering, reversible moderation, persistence and upgrade behavior with deterministic classification fixtures.
+
+See [integration test instructions](https://github.com/fatmambot33/phpbb-ai-antispam/blob/main/docs/INTEGRATION_TESTING.md) for setup, exact coverage and limits. No OpenAI calls or live forum data are used.
+
 ## Security reports
 
 Follow [SECURITY.md](SECURITY.md) to report vulnerabilities privately. Do not post API keys, session IDs or private forum content in issues.

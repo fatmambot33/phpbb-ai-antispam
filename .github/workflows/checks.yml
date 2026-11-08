@@ -74,3 +74,40 @@ jobs:
           php scripts/epv.php "$RUNNER_TEMP/phpbb-epv" "$RUNNER_TEMP/antispam-install"
       - name: Verify errors and warnings fail the gate
         run: python3 tests/epv_test.py --epv-root "$RUNNER_TEMP/phpbb-epv"
+  integration:
+    name: phpBB 3.3.19 / MariaDB integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mariadb:
+        image: mariadb:10.11@sha256:d769e37960821dfdcf096954f6e7ac89f747e116c1bba98e48edd265dfc7deae
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: '1'
+          MARIADB_DATABASE: antispam_integration
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, mysqli, dom, xml, xmlwriter, simplexml, iconv, ctype, tokenizer, fileinfo
+          tools: composer:2
+      - name: Load pinned phpBB 3.3.19
+        uses: actions/checkout@v4
+        with:
+          repository: phpbb/phpbb
+          ref: 10356c2c3be3804402c7616e18bb53d54c02f143
+          path: .phpbb-integration
+          persist-credentials: false
+      - name: Install phpBB locked runtime dependencies
+        run: composer install --working-dir=.phpbb-integration/phpBB --no-dev --prefer-dist --no-interaction --no-progress --no-scripts --no-plugins
+      - name: Install board and run integration/lifecycle/upgrade checks
+        run: python3 tests/integration/run.py --phpbb-checkout .phpbb-integration --results "$RUNNER_TEMP/antispam-results"

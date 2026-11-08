@@ -44,8 +44,8 @@ CI loads that sparse fixture into .phpbb-fixture. To run its check locally after
 
 ## Remaining work before submission
 
-- Run real phpBB 3.3.19/database integration tests for install/disable/enable/update, scheduled and manual scanning, private/password-protected forums, edited posts, API failures, first/last post counters, deletion/restoration and concurrent cron execution.
+- Run the [phpBB/MariaDB integration suite](INTEGRATION_TESTING.md) and review its exact coverage. The deterministic cases cover installation/lifecycle/upgrade, scanning, moderation, ACLs, CSRF, Twig rendering and cron-lock exclusion. Concurrent scanner processes, real provider calls and actual email delivery remain outside that suite.
 - Review external API billing, data transmission/retention disclosures and credential setup with the submission.
 - Prepare an appropriately versioned release, support details and redacted screenshots, then review current phpBB submission policies.
 
-The existing standalone tests and EPV do not establish these integration outcomes. Do not present an EPV pass as official validation.
+Standalone tests and EPV alone do not establish integration readiness. The integration suite adds real phpBB/database evidence within its documented limits; none of these checks constitutes official phpBB validation.

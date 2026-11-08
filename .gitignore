@@ -26,3 +26,7 @@ __pycache__/
 
 # Sparse phpBB core fixture used only by CI migration tests.
 /.phpbb-fixture/
+
+# Disposable phpBB source and integration reports.
+.phpbb-integration/
+test-results/

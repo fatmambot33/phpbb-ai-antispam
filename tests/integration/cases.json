@@ -1,0 +1,31 @@
+{
+  "current": [
+    "installation_and_container",
+    "safe_defaults",
+    "scan_prerequisite_gates",
+    "observe_new_posts",
+    "scheduled_cron_dispatch",
+    "private_password_and_opt_in",
+    "unapproved_and_excluded_posts",
+    "provider_failure_is_uncertain",
+    "latest_reply_delete_and_restore",
+    "single_post_topic_delete_and_restore",
+    "starter_delete_and_restore",
+    "manual_acp_scan_and_csrf",
+    "english_and_french_acp_rendering",
+    "edited_audited_post_is_reclassified",
+    "concurrent_edit_guard_and_rescan",
+    "cron_lock_exclusion"
+  ],
+  "legacy": [
+    "installation_and_container",
+    "safe_defaults",
+    "observe_new_posts"
+  ],
+  "verify-current": [
+    "disable_enable_persistence"
+  ],
+  "verify-upgrade": [
+    "legacy_upgrade_persistence"
+  ]
+}
