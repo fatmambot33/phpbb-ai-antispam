@@ -30,6 +30,13 @@ assert_true($payload['questions'][0]['type'] === 'choice', 'Wrong question type'
 assert_true(count($payload['questions'][0]['choices']) === 3, 'Wrong choices');
 assert_true(!isset($payload['store']), 'Decisions must not receive Responses-only options');
 
+assert_true(strpos($payload['input'], 'General online discussion forum.') !== false, 'Blank context must be generic');
+assert_true(strpos(json_encode($payload), 'BMW owners club') === false, 'New boards must not inherit BMW context');
+$custom = classifier::build_payload('Coral', 'Tank discussion', 'Aquarium keepers & récifs');
+assert_true(strpos($custom['input'], 'Forum: Aquarium keepers & récifs') === 0, 'Custom context was not sent as UTF-8');
+$bounded = classifier::build_payload('Test', 'Test', str_repeat('é', 300));
+assert_true(strpos($bounded['input'], 'Forum: ' . str_repeat('é', 240) . "\nTopic:") === 0, 'Context must be bounded by characters');
+
 $spam = classifier::parse_result(decision_fixture('spam', 0.97, 0.99));
 assert_true($spam['classification'] === 'spam' && $spam['confidence'] === 97, 'Spam safety score');
 $low_conf = classifier::parse_result(decision_fixture('spam', 0.99, 0.51));

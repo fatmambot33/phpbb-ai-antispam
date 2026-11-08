@@ -37,7 +37,7 @@ class link_database
         $audit = [
             'checked_at' => 1, 'classification' => 'legitimate', 'confidence' => 99,
             'spam_probability' => 0, 'provider_confidence' => 99,
-            'reason' => 'fixture', 'action_taken' => 'observed',
+            'reason' => 'Decisions: legitimate; P(spam)=0%; model confidence=99%', 'action_taken' => 'observed',
         ];
         // Audit records never store a URL or scan source. Existing and orphaned
         // rows must both retain links when viewed later in an ACP web request.
@@ -73,6 +73,7 @@ foreach ($template->rows as $i => $row)
 {
     $id = 101 + $i;
     check($row['U_POST'] === '../viewtopic.php?p=' . $id . '#p' . $id, 'Missing direct post permalink for audit row ' . $id);
+    check(strpos($row['REASON_LABEL'], 'ACP_BCA_ANTISPAM_REASON_DECISION') === 0, 'Standard audit reason was not localized');
     check($row['S_POST_MISSING'] === ($id === 102), 'Wrong missing-post status for audit row ' . $id);
 }
 echo "ACP audit post permalink and missing-post status tests passed\n";

@@ -11,7 +11,9 @@
 - [ ] Integration verification against phpBB 3.3 and MariaDB
 - [ ] Integration tests for topic starter, last reply, restored post, concurrent editing
 
-## V0.2 — Moderator experience
+## V0.2 — Configuration and moderator experience
+- [x] Configurable forum context with upgrade preservation
+- [x] English/French ACP interface and standard decision summaries
 - [x] ACP latest-30 results list (basic audit view)
 - [ ] Detailed filters, pagination and audit export
 - [ ] One-click restore and mark false positive

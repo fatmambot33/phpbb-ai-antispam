@@ -3,6 +3,7 @@ services:
         class: bca\antispam\service\classifier
         arguments:
             - '@request'
+            - '@config'
 
     bca.antispam.scanner:
         class: bca\antispam\service\scanner

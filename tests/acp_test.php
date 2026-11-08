@@ -29,6 +29,7 @@ namespace {
         if (!$value) { throw new \RuntimeException($message); }
     }
     function utf8_htmlspecialchars($value) { return htmlspecialchars($value, ENT_COMPAT, 'UTF-8'); }
+    function utf8_substr($value, $start, $length) { return mb_substr($value, $start, $length, 'UTF-8'); }
     function add_form_key($name) {}
     function check_form_key($name) { return $GLOBALS['valid_form']; }
     function adm_back_link($url) { return ''; }
@@ -42,9 +43,15 @@ namespace {
     });
     class request implements \phpbb\request\request_interface {
         public $scan = false;
+        public $submit = false;
+        public $values = [];
         public $key = '';
         public function server($name, $default = '') { return $name === 'BCA_ANTISPAM_OPENAI_API_KEY' ? $this->key : $default; }
-        public function is_set_post($name) { return $name === 'scan_now' && $this->scan; }
+        public function is_set_post($name) { return ($name === 'scan_now' && $this->scan) || ($name === 'submit' && $this->submit) || array_key_exists($name, $this->values); }
+        public function variable($name, $default, $multibyte = false) {
+            $value = $this->values[$name] ?? $default;
+            return $name === 'forum_context' ? htmlspecialchars($value, ENT_COMPAT, 'UTF-8') : $value;
+        }
     }
     class user {
         public function add_lang_ext($extension, $file) {}
@@ -119,8 +126,33 @@ namespace {
     check($template->rows[0]['REASON'] === '&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt; &amp; café',
         'Untrusted audit reason was not escaped as UTF-8 text');
 
-    $request->scan = true;
     try {
+        $request->submit = true;
+        $request->values = ['forum_context' => '</textarea><script>alert("x")</script> & café' . str_repeat('é', 300),
+            'enabled' => 1, 'forum_ids' => '2'];
+        $valid_form = false;
+        invoke_notice($module, 'FORM_INVALID');
+        check(!isset($config['bca_antispam_forum_context']), 'CSRF failure saved context');
+        $valid_form = true;
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_SAVED');
+        check(mb_strlen($config['bca_antispam_forum_context'], 'UTF-8') === 240, 'Saved context is not character-bounded');
+        check(strpos($config['bca_antispam_forum_context'], '& café') !== false, 'Context was stored HTML-encoded');
+        $request->submit = false;
+        $module->main('', 'settings');
+        check(strpos($template->vars['FORUM_CONTEXT'], '&lt;/textarea&gt;') === 0, 'Context can escape its textarea');
+        check(strpos($template->vars['FORUM_CONTEXT'], '<script>') === false, 'Context output is not escaped');
+        check($template->rows[0]['REASON_LABEL'] === $template->rows[0]['REASON'], 'Custom audit text must remain safely escaped');
+        $saved_context = $config['bca_antispam_forum_context'];
+        $request->submit = true;
+        unset($request->values['forum_context']);
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_SAVED');
+        check($config['bca_antispam_forum_context'] === $saved_context, 'An older cached form erased the saved context');
+        $request->values['forum_context'] = '';
+        invoke_notice($module, 'ACP_BCA_ANTISPAM_SAVED');
+        check($config['bca_antispam_forum_context'] === '', 'Explicit blank context did not enable the generic default');
+        $request->submit = false;
+        $request->values = [];
+        $request->scan = true;
         // Dummy key is only consumed by the runnable check; scanner is stubbed.
         $request->key = 'fixture';
         $valid_form = false;

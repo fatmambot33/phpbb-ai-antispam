@@ -51,6 +51,7 @@ class main_module
             }
 
             $settings = [
+                'forum_context' => $request->is_set_post('forum_context') ? utf8_substr(htmlspecialchars_decode($request->variable('forum_context', '', true), ENT_COMPAT), 0, 240) : ($config['bca_antispam_forum_context'] ?? ''),
                 'enabled' => (int) $request->variable('enabled', 0),
                 'auto_hide' => (int) $request->variable('auto_hide', 0),
                 'threshold' => max(80, min(100, (int) $request->variable('threshold', 95))),
@@ -78,10 +79,20 @@ class main_module
         $db->sql_freeresult($count_result);
         $shown = 0;
         $sql = 'SELECT r.post_id, r.checked_at, r.classification, r.confidence, r.spam_probability, r.provider_confidence,
-                       r.reason, r.action_taken, p.post_id AS existing_post_id
+                       r.reason, r.action_taken, r.error_code, p.post_id AS existing_post_id
                 FROM ' . $table_prefix . 'bca_antispam_results r
                 LEFT JOIN ' . POSTS_TABLE . ' p ON r.post_id = p.post_id
                 ORDER BY r.checked_at DESC, r.post_id DESC';
+        $decision_labels = [
+            'legitimate' => 'ACP_BCA_ANTISPAM_DECISION_LEGITIMATE',
+            'spam' => 'ACP_BCA_ANTISPAM_DECISION_SPAM',
+            'uncertain' => 'ACP_BCA_ANTISPAM_DECISION_UNCERTAIN',
+        ];
+        $action_labels = [
+            'observed' => 'ACP_BCA_ANTISPAM_ACTION_OBSERVED',
+            'soft_deleted' => 'ACP_BCA_ANTISPAM_ACTION_SOFT_DELETED',
+            'skipped_changed' => 'ACP_BCA_ANTISPAM_ACTION_SKIPPED_CHANGED',
+        ];
         $result = $db->sql_query_limit($sql, 30);
         while ($row = $db->sql_fetchrow($result))
         {
@@ -90,10 +101,13 @@ class main_module
             $template->assign_block_vars('result', [
                 'POST_ID' => $post_id,
                 'DATE' => $user->format_date((int) $row['checked_at']),
+                'CLASSIFICATION_LABEL' => utf8_htmlspecialchars(isset($decision_labels[$row['classification']]) ? $user->lang($decision_labels[$row['classification']]) : $row['classification']),
+                'ACTION_LABEL' => utf8_htmlspecialchars(isset($action_labels[$row['action_taken']]) ? $user->lang($action_labels[$row['action_taken']]) : $row['action_taken']),
                 'CLASSIFICATION' => utf8_htmlspecialchars($row['classification']),
                 'CONFIDENCE' => (int) $row['confidence'],
                 'SPAM_PROBABILITY' => (int) $row['spam_probability'],
                 'PROVIDER_CONFIDENCE' => (int) $row['provider_confidence'],
+                'REASON_LABEL' => utf8_htmlspecialchars($this->reason_label($row, $user, $decision_labels)),
                 'REASON' => utf8_htmlspecialchars($row['reason']),
                 'ACTION' => utf8_htmlspecialchars($row['action_taken']),
                 // The audit post ID is sufficient for phpBB's canonical permalink.
@@ -115,11 +129,35 @@ class main_module
             'THRESHOLD' => (int) $config['bca_antispam_threshold'],
             'INTERVAL' => (int) $config['bca_antispam_interval'],
             'DAYS' => (int) $config['bca_antispam_days'],
+            'FORUM_CONTEXT' => utf8_htmlspecialchars($config['bca_antispam_forum_context'] ?? ''),
             'FORUM_IDS' => $config['bca_antispam_forum_ids'],
             'EXCLUDED_USER_IDS' => $config['bca_antispam_excluded_user_ids'],
             'CURSOR' => (int) $config['bca_antispam_cursor'],
             'API_KEY_SET' => $request->server('BCA_ANTISPAM_OPENAI_API_KEY', '') !== '',
         ]);
+    }
+
+    private function reason_label(array $row, $user, array $decision_labels)
+    {
+        $code = $row['error_code'] ?? '';
+        $known_errors = ['missing_api_key', 'missing_curl', 'network_error', 'timeout',
+            'rate_limited', 'budget_exceeded', 'invalid_api_key', 'provider_error',
+            'invalid_response', 'refusal', 'request_rejected'];
+        if (in_array($code, $known_errors, true) && $row['reason'] === 'Classification unavailable: ' . $code)
+        {
+            return $user->lang('ACP_BCA_ANTISPAM_REASON_UNAVAILABLE',
+                $user->lang('ACP_BCA_ANTISPAM_ERROR_' . strtoupper($code)));
+        }
+        $canonical = sprintf('Decisions: %s; P(spam)=%d%%; model confidence=%d%%',
+            $row['classification'], (int) $row['spam_probability'], (int) $row['provider_confidence']);
+        if (isset($decision_labels[$row['classification']]) && $row['reason'] === $canonical)
+        {
+            return $user->lang('ACP_BCA_ANTISPAM_REASON_DECISION',
+                $user->lang($decision_labels[$row['classification']]),
+                (int) $row['spam_probability'], (int) $row['provider_confidence']);
+        }
+        // Keep custom or historical audit explanations intact.
+        return $row['reason'];
     }
 
     private function clean_ids($input)

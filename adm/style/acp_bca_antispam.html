@@ -1,24 +1,25 @@
 <!-- INCLUDE overall_header.html -->
 <h1>{L_ACP_BCA_ANTISPAM_TITLE}</h1>
-<p>Classify existing published posts. By default, no message is hidden automatically. <strong>Soft deletions do not recall already-sent emails.</strong></p>
+<p>{L_ACP_BCA_ANTISPAM_INTRO} <strong>{L_ACP_BCA_ANTISPAM_EMAIL_WARNING}</strong></p>
 <!-- IF not API_KEY_SET -->
-<div class="errorbox"><p>Missing environment variable BCA_ANTISPAM_OPENAI_API_KEY. Scanning will not run.</p></div>
+<div class="errorbox"><p>{L_ACP_BCA_ANTISPAM_MISSING_KEY}</p></div>
 <!-- ENDIF -->
 <form method="post" action="{U_ACTION}">
 <fieldset>
-<legend>Scan settings</legend>
-<dl><dt><label for="enabled">Enable scanning</label></dt><dd><input id="enabled" type="checkbox" name="enabled" value="1"<!-- IF S_ENABLED --> checked<!-- ENDIF --> /></dd></dl>
-<dl><dt><label for="forum_ids">Forum IDs to scan (comma separated, mandatory)</label></dt><dd><input id="forum_ids" type="text" name="forum_ids" value="{FORUM_IDS}" size="50" /><p>Only selected public forums; leave blank to process nothing.</p></dd></dl>
-<dl><dt><label for="excluded_user_ids">Excluded user IDs</label></dt><dd><input id="excluded_user_ids" type="text" name="excluded_user_ids" value="{EXCLUDED_USER_IDS}" size="50" /></dd></dl>
-<dl><dt><label for="interval">Interval (seconds)</label></dt><dd><input id="interval" type="number" min="60" max="3600" name="interval" value="{INTERVAL}" /></dd></dl>
-<dl><dt><label for="days">Lookback period (days)</label></dt><dd><input id="days" type="number" min="1" max="365" name="days" value="{DAYS}" /></dd></dl>
-<dl><dt>Last scanned post ID</dt><dd><strong>{CURSOR}</strong></dd></dl>
-<dl><dt><label for="reset_cursor">Re-scan lookback period</label></dt><dd><input type="checkbox" id="reset_cursor" name="reset_cursor" value="1" /> Reset cursor on save</dd></dl>
+<legend>{L_ACP_BCA_ANTISPAM_SCAN_SETTINGS}</legend>
+<dl><dt><label for="forum_context">{L_ACP_BCA_ANTISPAM_FORUM_CONTEXT}</label></dt><dd><textarea id="forum_context" name="forum_context" rows="3" cols="60" maxlength="240">{FORUM_CONTEXT}</textarea><p>{L_ACP_BCA_ANTISPAM_FORUM_CONTEXT_HELP}</p></dd></dl>
+<dl><dt><label for="enabled">{L_ACP_BCA_ANTISPAM_ENABLE}</label></dt><dd><input id="enabled" type="checkbox" name="enabled" value="1"<!-- IF S_ENABLED --> checked<!-- ENDIF --> /></dd></dl>
+<dl><dt><label for="forum_ids">{L_ACP_BCA_ANTISPAM_FORUM_IDS}</label></dt><dd><input id="forum_ids" type="text" name="forum_ids" value="{FORUM_IDS}" size="50" /><p>{L_ACP_BCA_ANTISPAM_FORUM_IDS_HELP}</p></dd></dl>
+<dl><dt><label for="excluded_user_ids">{L_ACP_BCA_ANTISPAM_EXCLUDED_USERS}</label></dt><dd><input id="excluded_user_ids" type="text" name="excluded_user_ids" value="{EXCLUDED_USER_IDS}" size="50" /></dd></dl>
+<dl><dt><label for="interval">{L_ACP_BCA_ANTISPAM_INTERVAL}</label></dt><dd><input id="interval" type="number" min="60" max="3600" name="interval" value="{INTERVAL}" /></dd></dl>
+<dl><dt><label for="days">{L_ACP_BCA_ANTISPAM_LOOKBACK}</label></dt><dd><input id="days" type="number" min="1" max="365" name="days" value="{DAYS}" /></dd></dl>
+<dl><dt>{L_ACP_BCA_ANTISPAM_CURSOR}</dt><dd><strong>{CURSOR}</strong></dd></dl>
+<dl><dt><label for="reset_cursor">{L_ACP_BCA_ANTISPAM_RESCAN}</label></dt><dd><input type="checkbox" id="reset_cursor" name="reset_cursor" value="1" /> {L_ACP_BCA_ANTISPAM_RESET_CURSOR}</dd></dl>
 </fieldset>
 <fieldset>
-<legend>Moderation</legend>
-<dl><dt><label for="auto_hide">Soft-delete high-confidence spam automatically</label></dt><dd><input type="checkbox" id="auto_hide" name="auto_hide" value="1"<!-- IF S_AUTO_HIDE --> checked<!-- ENDIF --> /><p>Turn on only after reviewing a representative dry-run sample.</p></dd></dl>
-<dl><dt><label for="threshold">Conservative safety threshold (minimum of category probability and model confidence; 80–100)</label></dt><dd><input id="threshold" type="number" min="80" max="100" name="threshold" value="{THRESHOLD}" /></dd></dl>
+<legend>{L_ACP_BCA_ANTISPAM_MODERATION}</legend>
+<dl><dt><label for="auto_hide">{L_ACP_BCA_ANTISPAM_AUTO_HIDE}</label></dt><dd><input type="checkbox" id="auto_hide" name="auto_hide" value="1"<!-- IF S_AUTO_HIDE --> checked<!-- ENDIF --> /><p>{L_ACP_BCA_ANTISPAM_AUTO_HIDE_HELP}</p></dd></dl>
+<dl><dt><label for="threshold">{L_ACP_BCA_ANTISPAM_THRESHOLD}</label></dt><dd><input id="threshold" type="number" min="80" max="100" name="threshold" value="{THRESHOLD}" /></dd></dl>
 </fieldset>
 <fieldset class="submit-buttons"><input class="button1" type="submit" name="submit" value="{L_SUBMIT}" />{S_FORM_TOKEN}</fieldset>
 </form>
@@ -39,20 +40,20 @@
 {S_FORM_TOKEN}
 </form>
 </fieldset>
-<h2>Latest classification decisions</h2>
+<h2>{L_ACP_BCA_ANTISPAM_RESULTS_TITLE}</h2>
 <p>{RESULTS_SUMMARY}</p>
 <p>{L_ACP_BCA_ANTISPAM_RESULTS_HELP}</p>
 <table class="table1">
-    <thead><tr><th>Post</th><th>Checked</th><th>Decision</th><th>Safety score</th><th>P(spam)</th><th>Model confidence</th><th>Reason</th><th>Action</th></tr></thead>
+    <thead><tr><th>{L_ACP_BCA_ANTISPAM_POST}</th><th>{L_ACP_BCA_ANTISPAM_CHECKED}</th><th>{L_ACP_BCA_ANTISPAM_DECISION}</th><th>{L_ACP_BCA_ANTISPAM_SAFETY_SCORE}</th><th>{L_ACP_BCA_ANTISPAM_SPAM_PROBABILITY}</th><th>{L_ACP_BCA_ANTISPAM_MODEL_CONFIDENCE}</th><th>{L_ACP_BCA_ANTISPAM_REASON}</th><th>{L_ACP_BCA_ANTISPAM_ACTION}</th></tr></thead>
     <tbody>
     <!-- BEGIN result -->
     <tr>
         <td><!-- IF result.U_POST --><a href="{result.U_POST}" target="_blank" rel="noopener noreferrer" title="{L_ACP_BCA_ANTISPAM_NEW_TAB}">#{result.POST_ID} — {L_ACP_BCA_ANTISPAM_VIEW_MESSAGE}</a><!-- ELSE -->#{result.POST_ID}<!-- ENDIF --><!-- IF result.S_POST_MISSING --><br /><span>{L_ACP_BCA_ANTISPAM_POST_MISSING}</span><!-- ENDIF --></td>
-        <td>{result.DATE}</td><td>{result.CLASSIFICATION}</td><td>{result.CONFIDENCE}</td>
-        <td>{result.SPAM_PROBABILITY}%</td><td>{result.PROVIDER_CONFIDENCE}%</td><td>{result.REASON}</td><td>{result.ACTION}</td>
+        <td>{result.DATE}</td><td>{result.CLASSIFICATION_LABEL}</td><td>{result.CONFIDENCE}</td>
+        <td>{result.SPAM_PROBABILITY}%</td><td>{result.PROVIDER_CONFIDENCE}%</td><td title="{result.REASON}">{result.REASON_LABEL}</td><td>{result.ACTION_LABEL}</td>
     </tr>
     <!-- BEGINELSE -->
-    <tr><td colspan="8">No classification results yet.</td></tr>
+    <tr><td colspan="8">{L_ACP_BCA_ANTISPAM_NO_RESULTS}</td></tr>
     <!-- END result -->
     </tbody>
 </table>
