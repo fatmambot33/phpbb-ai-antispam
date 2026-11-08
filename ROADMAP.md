@@ -24,4 +24,5 @@
 - [ ] Support author-based heuristics and allowlists
 - [ ] Backfill with pause/resume and visible progress
 - [ ] Privacy minimization and configurable data retention
-- [ ] phpBB Extension Validator and phpBB test-framework CI
+- [x] Official phpBB Extension Pre-Validator CI on the install package
+- [ ] phpBB test-framework integration CI

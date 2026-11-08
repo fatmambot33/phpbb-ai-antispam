@@ -8,7 +8,7 @@ from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_DIRS = ("acp", "adm", "config", "cron", "language", "migrations", "service")
-RUNTIME_FILES = ("composer.json", "LICENSE", "README.md", "SECURITY.md", "ROADMAP.md")
+RUNTIME_FILES = ("composer.json", "license.txt", "README.md", "SECURITY.md", "ROADMAP.md")
 
 
 def build(output_dir):

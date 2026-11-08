@@ -90,12 +90,12 @@ class main_module
             $template->assign_block_vars('result', [
                 'POST_ID' => $post_id,
                 'DATE' => $user->format_date((int) $row['checked_at']),
-                'CLASSIFICATION' => htmlspecialchars($row['classification'], ENT_QUOTES, 'UTF-8'),
+                'CLASSIFICATION' => utf8_htmlspecialchars($row['classification']),
                 'CONFIDENCE' => (int) $row['confidence'],
                 'SPAM_PROBABILITY' => (int) $row['spam_probability'],
                 'PROVIDER_CONFIDENCE' => (int) $row['provider_confidence'],
-                'REASON' => htmlspecialchars($row['reason'], ENT_QUOTES, 'UTF-8'),
-                'ACTION' => htmlspecialchars($row['action_taken'], ENT_QUOTES, 'UTF-8'),
+                'REASON' => utf8_htmlspecialchars($row['reason']),
+                'ACTION' => utf8_htmlspecialchars($row['action_taken']),
                 // The audit post ID is sufficient for phpBB's canonical permalink.
                 // Keep it even when the live-post lookup no longer matches.
                 'U_POST' => $post_id > 0 ? append_sid($phpbb_root_path . 'viewtopic.' . $phpEx, 'p=' . $post_id) . '#p' . $post_id : '',
@@ -118,7 +118,7 @@ class main_module
             'FORUM_IDS' => $config['bca_antispam_forum_ids'],
             'EXCLUDED_USER_IDS' => $config['bca_antispam_excluded_user_ids'],
             'CURSOR' => (int) $config['bca_antispam_cursor'],
-            'API_KEY_SET' => getenv('BCA_ANTISPAM_OPENAI_API_KEY') !== false && getenv('BCA_ANTISPAM_OPENAI_API_KEY') !== '',
+            'API_KEY_SET' => $request->server('BCA_ANTISPAM_OPENAI_API_KEY', '') !== '',
         ]);
     }
 
