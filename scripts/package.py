@@ -2,6 +2,7 @@
 """Build a reproducible phpBB install ZIP without development files."""
 import argparse
 import json
+import subprocess
 from pathlib import Path
 from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
@@ -19,8 +20,20 @@ def build(output_dir):
     if not version or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-" for c in version):
         raise ValueError("Unsafe package version")
     files = [ROOT / name for name in RUNTIME_FILES]
-    for directory in RUNTIME_DIRS:
-        files.extend(path for path in (ROOT / directory).rglob("*") if path.is_file())
+    # Only versioned runtime files belong in a release. Local PHP settings,
+    # backups and credentials must not be swept up by recursive discovery.
+    tracked = subprocess.check_output(
+        ["git", "-C", str(ROOT), "ls-files", "-z", "--", *RUNTIME_DIRS]
+    )
+    for relative in tracked.decode("utf-8").split("\0"):
+        if not relative:
+            continue
+        path = Path(relative)
+        lowered = path.name.lower()
+        if (lowered.startswith(".env") or lowered in {".htaccess", ".htpasswd", "config.php"}
+                or lowered.endswith((".log", ".sql", ".sql.gz", ".sql.bz2", ".sqlite", ".sqlite3", ".pem", ".key", ".p12", ".pfx", ".bak"))):
+            raise ValueError("Refusing to package deployment-only file: " + relative)
+        files.append(ROOT / path)
     output_dir.mkdir(parents=True, exist_ok=True)
     output = output_dir / ("bca-antispam-" + version + ".zip")
     with ZipFile(output, "w", compression=ZIP_DEFLATED) as archive:
