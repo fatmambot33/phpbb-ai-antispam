@@ -9,12 +9,12 @@ namespace bca\antispam\service;
 
 class classifier
 {
-    private $request;
+    private $api_key;
     private $config;
 
-    public function __construct(?\phpbb\request\request_interface $request = null, ?\phpbb\config\config $config = null)
+    public function __construct(?api_key $api_key = null, ?\phpbb\config\config $config = null)
     {
-        $this->request = $request;
+        $this->api_key = $api_key;
         $this->config = $config;
     }
 
@@ -31,7 +31,7 @@ class classifier
     {
         try
         {
-            $key = $this->request ? $this->request->server('BCA_ANTISPAM_OPENAI_API_KEY', '') : '';
+            $key = $this->api_key ? $this->api_key->get() : '';
             if (!$key)
             {
                 return self::unavailable('missing_api_key');

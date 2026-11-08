@@ -21,7 +21,9 @@ jobs:
         run: find . -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Classification parser tests
         run: php tests/classifier_test.php
-      - name: Request credential regression tests
+      - name: ACP key storage regression tests
+        run: php tests/api_key_test.php
+      - name: ACP-only credential regression tests
         run: php tests/credentials_test.php
       - name: Scanner regression tests
         run: php tests/scanner_test.php

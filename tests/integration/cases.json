@@ -2,6 +2,7 @@
   "current": [
     "installation_and_container",
     "safe_defaults",
+    "acp_key_lifecycle_and_storage",
     "scan_prerequisite_gates",
     "observe_new_posts",
     "scheduled_cron_dispatch",

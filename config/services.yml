@@ -1,8 +1,13 @@
 services:
+    bca.antispam.api_key:
+        class: bca\antispam\service\api_key
+        arguments:
+            - '@config_text'
+
     bca.antispam.classifier:
         class: bca\antispam\service\classifier
         arguments:
-            - '@request'
+            - '@bca.antispam.api_key'
             - '@config'
 
     bca.antispam.scanner:
@@ -20,7 +25,7 @@ services:
         arguments:
             - '@config'
             - '@bca.antispam.scanner'
-            - '@request'
+            - '@bca.antispam.api_key'
         calls:
             - [set_name, [bca.antispam.cron.task.scan]]
         tags:

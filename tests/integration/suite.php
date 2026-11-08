@@ -18,7 +18,8 @@ function integration_case($name, $callback)
 $result_table = $table_prefix . 'bca_antispam_results';
 $fake = new integration_classifier();
 $scanner = new \bca\antispam\service\scanner($config, $db, $phpbb_container->get('content.visibility'), $fake, $table_prefix, $auth);
-$cron = new \bca\antispam\cron\task\scan($config, $scanner, $request);
+$api_key = $phpbb_container->has('bca.antispam.api_key') ? $phpbb_container->get('bca.antispam.api_key') : null;
+$cron = new \bca\antispam\cron\task\scan($config, $scanner, $api_key ?: $request);
 $cron->set_name('bca.antispam.cron.task.scan');
 // Keep the real compiled container intact. This adapter substitutes only the
 // deterministic test cron/classifier while delegating every phpBB service.
@@ -32,13 +33,17 @@ try
         $expected = json_decode(file_get_contents($argv[5]), true);
         integration_case($phase === 'verify-current' ? 'disable_enable_persistence' : 'legacy_upgrade_persistence',
             function () use ($expected, $phase) {
-                global $config, $manager, $result_table;
+                global $config, $manager, $result_table, $api_key;
                 integration_check($manager->is_enabled('bca/antispam'), 'Extension did not re-enable');
                 integration_check(integration_count($result_table) === $expected['snapshot']['audit_count'], 'Lifecycle operation lost audit data');
                 foreach ($expected['snapshot']['settings'] as $key => $value) {
                     integration_check((string) $config[$key] === (string) $value, 'Lifecycle operation changed setting ' . $key);
                 }
+                if ($phase === 'verify-current') {
+                    integration_check(hash('sha256', $api_key->get()) === $expected['snapshot']['api_key_hash'], 'Disable/re-enable lost the saved key');
+                }
                 if ($phase === 'verify-upgrade') {
+                    integration_check(!$api_key->is_configured(), 'Upgrade imported an environment credential');
                     integration_check(strpos($config['bca_antispam_forum_context'], 'French classic BMW owners club.') === 0,
                         'Legacy migration did not preserve BMW context');
                 }
@@ -72,10 +77,54 @@ try
         $config->set('bca_antispam_forum_ids', '2');
         if ($phase === 'current')
         {
+            integration_case('acp_key_lifecycle_and_storage', function () {
+                global $config, $db, $api_key, $auth, $user, $request, $phpbb_root_path;
+                $module = new \bca\antispam\acp\main_module();
+                $module->u_action = 'integration.php';
+                $fixture = 'acp-integration-fixture-not-a-real-key';
+                $created = time() - 2;
+                $token = sha1($created . $user->data['user_form_salt'] . 'bca_antispam_settings');
+                integration_request_post(['save_api_key' => 1, 'new_api_key' => $fixture,
+                    'creation_time' => $created, 'form_token' => $token]);
+                $guest = $auth->obtain_user_data(ANONYMOUS);
+                $auth->acl($guest);
+                try { $module->main('', 'settings'); throw new RuntimeException('Non-admin key save accepted'); }
+                catch (RuntimeException $error) {
+                    integration_check(strpos($error->getMessage(), 'NOT_AUTHORISED') !== false, 'Wrong non-admin outcome');
+                }
+                $auth->acl($user->data);
+                integration_check(!$api_key->is_configured(), 'Non-admin stored a key');
+                integration_request_post(['form_token' => 'invalid']);
+                try { $module->main('', 'settings'); throw new RuntimeException('Invalid CSRF key save accepted'); }
+                catch (RuntimeException $error) { integration_check(strpos($error->getMessage(), 'FORM_INVALID') !== false, 'Wrong key CSRF outcome'); }
+                integration_request_post(['form_token' => $token]);
+                try { $module->main('', 'settings'); throw new RuntimeException('Key save did not report completion'); }
+                catch (RuntimeException $error) {
+                    integration_check(strpos($error->getMessage(), 'API key saved.') !== false, 'Wrong key save outcome');
+                }
+                integration_check($api_key->get() === $fixture, 'ACP key did not persist in config_text');
+                $r = $db->sql_query("SELECT COUNT(*) AS total FROM " . CONFIG_TABLE . " WHERE config_name = 'bca_antispam_api_key'");
+                integration_check((int) $db->sql_fetchfield('total', false, $r) === 0, 'Key leaked into global config table');
+                $db->sql_freeresult($r);
+                integration_request_post(['new_api_key' => '']);
+                try { $module->main('', 'settings'); throw new RuntimeException('Blank key save did not complete'); }
+                catch (RuntimeException $error) { integration_check(strpos($error->getMessage(), 'API key unchanged.') !== false, 'Wrong blank key outcome'); }
+                integration_check($api_key->get() === $fixture, 'Blank field erased key');
+                foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($phpbb_root_path . 'cache', FilesystemIterator::SKIP_DOTS)) as $file) {
+                    if ($file->isFile()) {
+                        integration_check(strpos(file_get_contents($file->getPathname()), $fixture) === false, 'Key leaked into a phpBB cache file');
+                    }
+                }
+                integration_request_post(['save_api_key' => null, 'remove_api_key' => 1]);
+                try { $module->main('', 'settings'); throw new RuntimeException('Key removal did not complete'); }
+                catch (RuntimeException $error) { integration_check(strpos($error->getMessage(), 'API key removed.') !== false, 'Wrong key removal outcome'); }
+                integration_check(!$api_key->is_configured(), 'Removed key stayed active');
+                integration_request_post(['remove_api_key' => null, 'new_api_key' => null, 'creation_time' => null, 'form_token' => null]);
+            });
             integration_case('scan_prerequisite_gates', function () {
-                global $config, $cron, $request, $fake;
+                global $config, $cron, $request, $fake, $api_key;
                 integration_check(!$cron->is_runnable(), 'Missing key did not block scheduling');
-                $request->overwrite('BCA_ANTISPAM_OPENAI_API_KEY', 'integration-fixture-only', \phpbb\request\request_interface::SERVER);
+                $api_key->replace('integration-fixture-only');
                 $config->set('bca_antispam_forum_ids', '');
                 integration_check(!$cron->is_runnable(), 'Missing forum selection did not block scheduling');
                 $config->set('bca_antispam_forum_ids', '2');
@@ -83,7 +132,8 @@ try
                 integration_check(count($fake->calls) === 0, 'Readiness checks invoked the classifier');
             });
         }
-        $request->overwrite('BCA_ANTISPAM_OPENAI_API_KEY', 'integration-fixture-only', \phpbb\request\request_interface::SERVER);
+        if ($api_key) { $api_key->replace('integration-fixture-only'); }
+        else { $request->overwrite('BCA_ANTISPAM_OPENAI_API_KEY', 'integration-fixture-only', \phpbb\request\request_interface::SERVER); }
         integration_case('observe_new_posts', function () {
             global $scanner, $result_table;
             $post = integration_post('Observed topic', 'SPAM_FIXTURE observation only');
@@ -213,7 +263,7 @@ try
                 integration_request_post(['scan_now' => null, 'creation_time' => null, 'form_token' => null]);
             });
             integration_case('english_and_french_acp_rendering', function () {
-                global $config, $user, $template, $phpbb_container, $phpbb_root_path, $report_file;
+                global $config, $user, $template, $phpbb_container, $phpbb_root_path, $report_file, $api_key;
                 $config->set('bca_antispam_forum_context', '</textarea><script>fixture</script> & café');
                 $template->set_custom_style([['name' => 'adm', 'ext_path' => 'adm/style/']], $phpbb_root_path . 'adm/style');
                 foreach (['en' => 'Forum context', 'fr' => 'Contexte du forum'] as $locale => $label)
@@ -225,6 +275,8 @@ try
                     $module->main('', 'settings');
                     $template->set_filenames(['body' => '@bca_antispam/acp_bca_antispam.html']);
                     $html = $template->assign_display('body');
+                    integration_check(strpos($html, $api_key->get()) === false, 'Saved key leaked into ACP HTML');
+                    integration_check(strpos($html, 'name="new_api_key" value=""') !== false, 'Key field is not blank');
                     integration_check(strpos($html, $label) !== false, 'Context field did not render in ' . $locale);
                     integration_check(strpos($html, 'ACP_BCA_ANTISPAM_') === false, 'Unresolved language key in rendered ACP');
                     integration_check(strpos($html, '&lt;/textarea&gt;&lt;script&gt;fixture&lt;/script&gt; &amp; café') !== false, 'Stored context can escape textarea');
@@ -277,7 +329,7 @@ try
         foreach (['bca_antispam_enabled', 'bca_antispam_auto_hide', 'bca_antispam_forum_ids', 'bca_antispam_cursor'] as $key) {
             $snapshot['settings'][$key] = $config[$key];
         }
-        if ($phase === 'current') { $snapshot['settings']['bca_antispam_forum_context'] = $config['bca_antispam_forum_context']; }
+        if ($phase === 'current') { $snapshot['api_key_hash'] = hash('sha256', $api_key->get()); $snapshot['settings']['bca_antispam_forum_context'] = $config['bca_antispam_forum_context']; }
     }
     $completed = true;
 }

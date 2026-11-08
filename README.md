@@ -4,7 +4,7 @@
 
 The extension reviews **already published** posts and classifies them with a small OpenAI model (`gpt-6-luna` via the OpenAI Decisions API). It does **not** block new posts or recall subscriber emails already sent by phpBB. It can optionally *soft-delete* clear spam using phpBB's core visibility service, making it invisible to regular visitors without irreversibly removing the post.
 
-## Capabilities in 0.2.0-beta
+## Capabilities in 0.3.0-beta
 
 - Configurable forum context and English/French ACP interface.
 - Run as a native phpBB cron task (no Python/Docker dependency).
@@ -20,17 +20,17 @@ The extension reviews **already published** posts and classifies them with a sma
 
 1. Back up the phpBB database and files. Verify phpBB 3.3, PHP >= 7.4, cURL and mbstring.
 2. Download an **install package**, extract it, and copy the extracted **`bca`** folder into **`<phpbb-root>/ext/`**. The final path must be **`<phpbb-root>/ext/bca/antispam/composer.json`**. See the download options below.
-3. Supply `BCA_ANTISPAM_OPENAI_API_KEY` as an environment variable visible to phpBB PHP workers and CLI processes. Do not put the key in Git or ACP settings.
+3. Have your OpenAI API key ready. Configure it only through the extension’s ACP credentials form after enabling the extension; do not put it in Git.
 4. In phpBB ACP: **Customise > Manage extensions > AI Anti-Spam > Enable**.
-5. In **Extensions > AI Anti-Spam**, opt in to specific **public** forum IDs. Set scan enabled, **leave automatic soft-delete disabled**.
+5. In **Extensions > AI Anti-Spam**, save your key in **OpenAI API key**, then opt in to specific **public** forum IDs. Set scan enabled, **leave automatic soft-delete disabled**.
 6. Schedule phpBB's standard cron runner via hosting cron / phpBB CLI. The default job interval is 120 seconds, but actual timing depends on cron deployment and job time budget.
 7. Validate returned classifications from test posts, including real legitimate club advertisements, before even considering automatic soft-deletion.
 8. Observe phpBB database state, counters, topic-first/last handling and moderator restoration on a **staging clone** prior to production deployment.
 
 ### Get the install ZIP
 
-- **From GitHub:** open [Actions → Install package](https://github.com/fatmambot33/phpbb-ai-antispam/actions/workflows/package.yml), choose **Run workflow** on the branch you want to test, then follow the **Download ZIP from the draft release** link in the completed run’s summary. Download **`bca-antispam-0.2.0-beta.zip`** under the draft release’s assets. The ZIP already contains `bca/antispam/`. Draft releases require repository write access to view; publish the draft manually when you want to share it. Each run attempt creates a separate draft, and version tags also run this workflow.
-- **From a local checkout:** run `python3 scripts/package.py`. Upload/extract the resulting `dist/bca-antispam-0.2.0-beta.zip` using the same instructions. Python is only needed to build the ZIP, never on your forum server.
+- **From GitHub:** open [Actions → Install package](https://github.com/fatmambot33/phpbb-ai-antispam/actions/workflows/package.yml), choose **Run workflow** on the branch you want to test, then follow the **Download ZIP from the draft release** link in the completed run’s summary. Download **`bca-antispam-0.3.0-beta.zip`** under the draft release’s assets. The ZIP already contains `bca/antispam/`. Draft releases require repository write access to view; publish the draft manually when you want to share it. Each run attempt creates a separate draft, and version tags also run this workflow.
+- **From a local checkout:** run `python3 scripts/package.py`. Upload/extract the resulting `dist/bca-antispam-0.3.0-beta.zip` using the same instructions. Python is only needed to build the ZIP, never on your forum server.
 - GitHub's green **Code → Download ZIP** button downloads the development repository. If you use that archive, rename its extracted project folder to `antispam` and put it inside `ext/bca/`. The install package avoids that renaming step.
 
 The workflow uses GitHub Release assets instead of Actions artifacts, so it does not consume the Actions artifact storage quota. It creates a draft prerelease and does not publish it automatically.
@@ -70,9 +70,19 @@ The table shows up to 30 results and the total number of classified posts. It ke
 
 For new posts to qualify, they must be approved, in an approved topic, in a selected public forum readable by guests, and within the lookback period. Excluded users and password-protected forums are skipped. If new posts qualify but **Scan now** reports zero, check the PHP server logs for scanner failures.
 
-If manual scanning works but the last scheduled attempt remains old, check phpBB cron delivery. Page-triggered cron relies on visits to the forum; the ACP alone does not trigger it. With system cron enabled, the hosting task must execute phpBB cron, and the API key must be available to CLI PHP as well as web PHP. A key set in Apache's `.htaccess` does not configure CLI PHP.
+If manual scanning works but the last scheduled attempt remains old, check phpBB cron delivery. Page-triggered cron relies on visits to the forum; the ACP alone does not trigger it. With system cron enabled, the hosting task must execute phpBB cron. Both web and CLI scans use the same key saved through the ACP.
 
 To revisit older posts or include older posts after expanding the selected forums/lookback period, tick **Re-scan lookback period** and save. This resets the cursor and can make new paid API calls for previously classified posts.
+
+### ACP-only API key setup in 0.3.0-beta
+
+After enabling the extension, open **Extensions > AI Anti-Spam > OpenAI API key**. Paste the key into the blank password field and select **Save key**. Only administrators with board-configuration permission can access these controls.
+
+The page displays only whether a key is configured. A blank submission preserves the current key; use **Remove saved key** to delete it. Replacement and removal require a valid phpBB form token. Key changes do not reset scan settings or historical results.
+
+The key is stored unencrypted in phpBB’s uncached config_text table and is present in database backups. Restrict database/backup access, use HTTPS for the ACP, and avoid production SQL/debug logging that could record credential writes. A password field masks input; it does not encrypt storage.
+
+Environment variables and .htaccess SetEnv are no longer consulted. When upgrading an existing installation, disable the extension, replace the complete package, enable it to run migrations, purge phpBB’s cache, and enter the key once in the ACP. It is not imported automatically. Scanning stays unavailable until a key is saved. After verifying the ACP key, remove the obsolete API-key SetEnv line from the forum’s .htaccess.
 
 ### Forum context and the 0.2.0-beta update
 
@@ -104,6 +114,7 @@ Posts are sent to the OpenAI Decisions API over HTTPS. The extension does not su
 find . -name '*.php' -print0 | xargs -0 -n1 php -l
 php tests/classifier_test.php
 php tests/credentials_test.php
+php tests/api_key_test.php
 php tests/scanner_test.php
 php tests/acp_test.php
 php tests/language_test.php

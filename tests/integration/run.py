@@ -124,6 +124,7 @@ def main():
         shutil.rmtree(board / "install")  # Only the marked temporary board is modified.
         archive = package.build(work)
         replace_extension(board, archive)
+        command([args.php, 'bin/phpbbcli.php', 'cache:purge', '--no-interaction'], board, environment, output / 'fresh-cache-purge.log')
         counter = 0
 
         def cli(operation):
@@ -160,10 +161,12 @@ def main():
         cli("disable")
         cli("purge")  # Tests only: removes extension fixtures, never an existing user's data.
         replace_extension(board, legacy_package(work / "legacy.zip"))
+        command([args.php, 'bin/phpbbcli.php', 'cache:purge', '--no-interaction'], board, environment, output / 'legacy-cache-purge.log')
         cli("enable")
         legacy = suite("legacy")
         cli("disable")
         replace_extension(board, archive)
+        command([args.php, 'bin/phpbbcli.php', 'cache:purge', '--no-interaction'], board, environment, output / 'upgrade-cache-purge.log')
         cli("enable")
         suite("verify-upgrade", legacy)
         summary = {"run_id": nonce, "completed": True, "phpbb_revision": revision,

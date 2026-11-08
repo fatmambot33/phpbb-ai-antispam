@@ -11,7 +11,7 @@ This is an experimental phpBB 3.3 extension. Only the latest development revisio
 
 ## Credentials and deployment files
 
-Keep the OpenAI key in your hosting configuration, outside this extension repository. A forum-root `.htaccess` containing `SetEnv` must remain on your server; it is not an extension file. phpBB's root `config.php`, database backups and logs must also stay out of Git and release attachments.
+Version 0.3.0-beta accepts API keys only through the administrator-only ACP credentials form. The key is stored unencrypted in phpBB’s config_text database table, outside the globally cached configuration. Database backups contain it. The form never redisplays the saved value; blank input preserves it and an explicit removal action deletes it. Use HTTPS and protect database/backup access. Avoid SQL/debug logging that may record credential writes. Environment variables are not consulted or imported. Remove obsolete key-bearing .htaccess lines after verifying ACP setup. phpBB's root `config.php`, database backups and logs must also stay out of Git and release attachments.
 
 Ignore rules do not remove files already tracked in Git. If a credential is exposed, revoke or rotate it immediately and investigate Git history, discussions, logs and release assets before publishing the repository.
 
@@ -26,7 +26,7 @@ OpenAI API data is not used for model training by default unless the organizatio
 ## Operational safeguards
 
 - No source code deployment has been verified on a live phpBB instance.
-- Set `BCA_ANTISPAM_OPENAI_API_KEY` in server environment; never commit a token.
+- Save the key only through the ACP credentials form; never commit it or paste it into issues, screenshots or logs.
 - Only opt in to public forum IDs. Do not include private member-only forums without appropriate privacy review.
 - Forum text is sent to an external AI provider; review retention and GDPR disclosures before enabling.
 - The Decisions request does not set a Responses API `store` flag. Review the provider's data-handling terms and document the processing.

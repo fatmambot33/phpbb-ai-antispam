@@ -1,10 +1,5 @@
 <?php
 namespace phpbb\config { class config extends \ArrayObject {} }
-namespace phpbb\request {
-    interface request_interface {
-        public function server($name, $default = '');
-    }
-}
 namespace bca\antispam\service {
     // No real HTTP calls: exercise the classifier's complete request path.
     function function_exists($name) { return $name === 'curl_init' || \function_exists($name); }
@@ -21,6 +16,8 @@ namespace bca\antispam\service {
     function curl_close($handle) {}
 }
 namespace {
+    require_once __DIR__ . '/api_key_fixture.php';
+    require_once __DIR__ . '/../service/api_key.php';
     require_once __DIR__ . '/../service/classifier.php';
     foreach (['CURLOPT_POST', 'CURLOPT_HTTPHEADER', 'CURLOPT_POSTFIELDS',
         'CURLOPT_RETURNTRANSFER', 'CURLOPT_CONNECTTIMEOUT', 'CURLOPT_TIMEOUT',
@@ -31,27 +28,20 @@ namespace {
     function check($condition, $message) {
         if (!$condition) { throw new \RuntimeException($message); }
     }
-    class server_request implements \phpbb\request\request_interface {
-        public $values = [];
-        public $queried = [];
-        public function server($name, $default = '') {
-            $this->queried[] = $name;
-            return $this->values[$name] ?? $default;
-        }
-    }
-    $request = new server_request();
+    $storage = new \phpbb\config\db_text();
+    $api_key = new \bca\antispam\service\api_key($storage);
     $config = new \phpbb\config\config(['bca_antispam_forum_context' => 'Aquarium keepers & récifs']);
-    $classifier = new \bca\antispam\service\classifier($request, $config);
+    $classifier = new \bca\antispam\service\classifier($api_key, $config);
     $missing = $classifier->classify('Test', 'Test');
     check($missing['classification'] === 'uncertain' && $missing['error_code'] === 'missing_api_key',
         'Missing request credential must fail open');
     check(!isset($GLOBALS['captured_options']), 'Missing credential reached transport');
 
-    $request->values['HTTP_BCA_ANTISPAM_OPENAI_API_KEY'] = 'untrusted-header-fixture';
+    putenv('BCA_ANTISPAM_OPENAI_API_KEY=ignored-environment-fixture');
     check($classifier->classify('Test', 'Test')['error_code'] === 'missing_api_key',
-        'A client header was used as the API key');
+        'Environment key was used despite ACP-only storage');
 
-    $request->values['BCA_ANTISPAM_OPENAI_API_KEY'] = 'non-secret-test-fixture';
+    $api_key->replace('non-secret-test-fixture');
     $result = $classifier->classify('Test', 'Test');
     check($result['classification'] === 'legitimate', 'Request credential was not consumed');
     check(in_array('Authorization: Bearer non-secret-test-fixture',
@@ -64,7 +54,8 @@ namespace {
     $classifier->classify('Test', 'Test');
     $payload = json_decode($GLOBALS['captured_options'][CURLOPT_POSTFIELDS], true);
     check(strpos($payload['input'], 'Forum: Woodworking hobbyists') === 0, 'Context changes were not used on subsequent requests');
-    check(array_unique($request->queried) === ['BCA_ANTISPAM_OPENAI_API_KEY'],
-        'Unexpected credential source was queried');
-    echo "phpBB request credential and classifier transport tests passed\n";
+    $api_key->remove();
+    check($classifier->classify('Test', 'Test')['error_code'] === 'missing_api_key', 'Removed key remained active');
+    putenv('BCA_ANTISPAM_OPENAI_API_KEY');
+    echo "ACP-only credential and classifier transport tests passed\n";
 }
