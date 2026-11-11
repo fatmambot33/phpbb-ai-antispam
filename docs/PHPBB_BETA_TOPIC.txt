@@ -1,0 +1,57 @@
+[b]Extension Name:[/b] AI Anti-Spam for phpBB
+[b]Author:[/b] BCA Contributors
+[b]Extension Version:[/b] 0.3.0-beta
+[b]License:[/b] GPL-2.0-only
+
+[b]Description[/b]
+Review already published posts in selected public forums using OpenAI. Classification decisions appear in the ACP with a link to the original message. Start in observation mode and review the results before considering optional automatic soft-deletion.
+
+This is an experimental beta for feedback and testing. It has not been validated by the phpBB Extensions Team. The intention is to submit it to the Customisation Database after beta testing and review against the Extension Validation Policy.
+
+[b]Requirements[/b]
+[list]
+[*]phpBB 3.3.x. Database integration has been tested on phpBB 3.3.19 with MariaDB 10.11.
+[*]PHP 7.4 or later, with cURL and mbstring. Automated PHP checks run on 7.4, 8.2 and 8.4.
+[*]An OpenAI API account with billing allowance and access to the configured gpt-6-luna / Decisions API, plus outbound HTTPS access from the forum server.
+[/list]
+
+[b]Features[/b]
+[list]
+[*]Opt in to public forums by forum ID; private, password-protected and unapproved content is excluded.
+[*]Scheduled phpBB cron scanning and a manual Scan now action in the ACP.
+[*]Configurable forum context, lookback period, scan interval and excluded author IDs.
+[*]Reclassification when a previously audited post is edited.
+[*]Latest 30 decisions, total result count and View message links.
+[*]English and French ACP interface.
+[*]ACP-only API key management, shared by web and CLI scans.
+[*]Optional reversible soft-deletion through phpBB's core visibility service. Scanning and automatic hiding are disabled by default; provider failures are recorded as uncertain without hiding posts.
+[/list]
+
+[b]Download[/b]
+[url=https://github.com/fatmambot33/phpbb-ai-antispam/releases/download/v0.3.0-beta/bca-antispam-0.3.0-beta.zip]Download bca-antispam-0.3.0-beta.zip[/url]
+[url=https://github.com/fatmambot33/phpbb-ai-antispam/releases/tag/v0.3.0-beta]Release notes and checksum[/url]
+
+[b]Install / upgrade[/b]
+Back up forum files and database, and test on staging first. Extract the ZIP and copy its bca folder into the forum's ext directory. The final path must be ext/bca/antispam/composer.json. Enable the extension under ACP > Customise > Manage extensions.
+
+When updating, disable the extension and replace the complete ext/bca/antispam directory, purge phpBB's cache, then re-enable it. [b]Do not choose Delete data during an update.[/b]
+
+Save the OpenAI key in ACP > Extensions > AI Anti-Spam. Select the public forum IDs to scan, enable scanning and [b]keep automatic hiding disabled[/b] while evaluating decisions. Existing environment keys are not read or imported by this version. The forum server does not need Python, Docker or a Composer install for this extension.
+
+[b]External service, privacy and limitations[/b]
+OpenAI is an external paid service. Selected public post text, topic/subject context and configured forum context are transmitted over HTTPS. User-written text can contain personal information. Administrators must review the provider's current billing, retention and data-protection terms. API data is not used for training by default unless the organization opts in; this does not guarantee zero retention.
+
+The key is stored [b]unencrypted in the forum database and its backups[/b], outside the globally cached configuration. The saved value is not redisplayed. Use HTTPS and protect database and backup access.
+
+The extension acts after publication and cannot prevent or recall subscriber emails already sent by phpBB. AI scores are not calibrated proof that a post is spam; false positives and false negatives remain possible. Restore hidden posts through phpBB's normal moderation tools.
+
+[b]Testing and feedback[/b]
+The official Extension Pre-Validator reported zero findings. Deterministic integration tests cover installation, upgrades, ACLs, CSRF, credential handling, cron dispatch, edits and core deletion/restoration. The local suite passed 22 cases and 140 assertions. These automated tests do not call OpenAI or establish model accuracy. The maintainer has also reported successful manual and scheduled scans and message-link checks on the forum.
+
+Feedback on installation, scheduled scans and classification mistakes is welcome. For classification feedback, include a short synthetic or redacted example and the expected result. Do not share keys, session IDs or private forum content.
+
+[b]Support[/b]
+Please use this development topic for extension support. Support is provided by the extension author, not the phpBB Teams. Report security vulnerabilities privately to the author using the repository's Security policy and also to phpBB's Extension Security Tracker, as required by the development-forum rules.
+
+[url=https://github.com/fatmambot33/phpbb-ai-antispam]Source and documentation[/url]
+[url=https://github.com/fatmambot33/phpbb-ai-antispam/blob/main/SECURITY.md]Security and privacy policy[/url]
