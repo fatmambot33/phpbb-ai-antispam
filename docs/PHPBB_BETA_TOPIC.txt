@@ -1,5 +1,5 @@
 [b]Extension Name:[/b] AI Anti-Spam for phpBB
-[b]Author:[/b] BCA Contributors
+[b]Author:[/b] bmwclubarmorique.fr
 [b]Extension Version:[/b] 0.3.0-beta
 [b]License:[/b] GPL-2.0-only
 
