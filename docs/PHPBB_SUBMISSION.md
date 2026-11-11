@@ -1,6 +1,6 @@
 # phpBB submission pack — 0.3.0-beta
 
-This is a preparation pack, not a submitted or approved phpBB extension. Version 0.3.0-beta remains an experimental test build. The maintainer confirmed on 2026-11-08 that this version has not yet been installed and checked on the forum.
+This is a preparation pack, not a submitted or approved phpBB extension. Version 0.3.0-beta remains an experimental test build. On 2026-11-11 the maintainer reported that the requested forum scan checks were successful; the acceptance record below distinguishes this report from automated evidence and checks still pending.
 
 ## Package and evidence
 
@@ -63,16 +63,18 @@ The integration suite exercises installation, ACL filtering, scheduled dispatch,
 
 It does not establish model accuracy, real provider availability, actual email delivery or browser-login behavior. No real OpenAI credential or live forum database was used. Automated passes do not constitute phpBB Extensions Team approval.
 
-## Forum acceptance record — pending
+## Forum acceptance record
 
 Record results for this exact ZIP before proposing a release for wider use. Keep automatic hiding disabled on the live forum. Exercise optional moderation behavior on a disposable staging board.
+
+On 2026-11-11 the maintainer reported success after being asked to verify manual scanning, scheduled scanning and the message links. These outcomes are recorded as maintainer-reported, without independently collected forum logs or screenshots. This does not establish model accuracy, privacy-filter coverage or completion of the separate staging checks below.
 
 | Check | Expected result | Recorded result |
 | --- | --- | --- |
 | Upgrade without deleting extension data | Extension re-enables; prior settings and audit decisions remain | Pending |
 | ACP credentials | Key saves; returning to the page shows configured status and an empty password field | Pending |
-| Manual scan | A new eligible public fixture post receives an audit decision; View message opens that post | Pending |
-| Scheduled scan | A second new eligible post is classified without Scan now; last-attempt time advances | Pending |
+| Manual scan | A new eligible public fixture post receives an audit decision; View message opens that post | Passed — maintainer report, 2026-11-11 |
+| Scheduled scan | A second new eligible post is classified without Scan now; last-attempt time advances | Passed — maintainer report, 2026-11-11 |
 | Restricted forum | Content outside the public opt-in list is not classified | Pending |
 | Legitimate / spam review | Maintainer reviews representative results and records false positives, false negatives and sample size | Pending |
 | Missing key on staging | Scheduling stops and no post is hidden; restoring the key restores eligibility | Pending |
@@ -84,7 +86,7 @@ Use synthetic posts for screenshots. Capture the credentials/status area with no
 ## Submission steps still requiring the maintainer
 
 1. Complete the acceptance record and select the phpBB.com account responsible for support. The repository author label is BCA Contributors; confirm the desired attribution before entering submission fields.
-2. Read the current rules from [phpBB Extensions](https://www.phpbb.com/extensions/) and its linked submission policies. The environment could not access phpBB.com on 2026-11-08 because its network proxy rejected the destination. Acceptance of beta versions, required fields/screenshots and support-topic requirements have not been verified against current policy.
+2. Read the current rules from [phpBB Extensions](https://www.phpbb.com/extensions/) and its linked submission policies. The environment could not access phpBB.com on 2026-11-08 or on retry on 2026-11-11 because its network proxy rejected the destination. Acceptance of beta versions, required fields/screenshots and support-topic requirements have not been verified against current policy.
 3. Choose the submission version/status based on those rules and test results. Do not rename this beta to a stable version without reviewing metadata, changelog, package and validation together.
 4. Prepare the required screenshots and a publicly usable support/download path when appropriate. Review any public beta announcement before posting it.
 5. Sign in on phpBB.com and follow its extension submission flow. Use the install ZIP containing bca/antispam/, not GitHub's source archive. Include the external-service, billing and credential-storage disclosures above. Verify the uploaded file's identity and version.
