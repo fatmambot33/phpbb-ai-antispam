@@ -1,6 +1,6 @@
 # phpBB submission pack — 0.3.0-beta
 
-This is a preparation pack, not a submitted or approved phpBB extension. Version 0.3.0-beta remains an experimental test build. On 2026-11-11 the maintainer reported that the requested forum scan checks were successful; the acceptance record below distinguishes this report from automated evidence and checks still pending.
+This is a preparation pack, not a submitted or approved phpBB extension. Version 0.3.0-beta is a public experimental beta on GitHub. On 2026-11-11 the maintainer reported that the requested forum scan checks were successful; the acceptance record below distinguishes this report from automated evidence and checks still pending.
 
 ## Package and evidence
 
@@ -13,12 +13,31 @@ This is a preparation pack, not a submitted or approved phpBB extension. Version
 | Package source commit | 5357ec0930f2fd5095f5c6df3411a32be16f53a0 |
 | Install ZIP | bca-antispam-0.3.0-beta.zip |
 | ZIP SHA-256 | a0606c3c74eaa75a3916b4f71d6b1b0ed8ffc23d9e856c701df261425c6fa629 |
-| Package download | [GitHub releases](https://github.com/fatmambot33/phpbb-ai-antispam/releases) → AI Anti-Spam 0.3.0-beta — test package; requires repository write access while a draft |
+| Package download | [0.3.0-beta release](https://github.com/fatmambot33/phpbb-ai-antispam/releases/tag/v0.3.0-beta) / [install ZIP](https://github.com/fatmambot33/phpbb-ai-antispam/releases/download/v0.3.0-beta/bca-antispam-0.3.0-beta.zip) |
 | Source | https://github.com/fatmambot33/phpbb-ai-antispam |
 | Support / bugs | https://github.com/fatmambot33/phpbb-ai-antispam/issues |
 | Private security reports | [Security policy](../SECURITY.md) |
 
-The ZIP's contents were downloaded from GitHub and compared byte-for-byte with the tested local package. The draft download is not a public support/download URL. Provide a public download when announcing a beta publicly, and follow the current phpBB submission procedure for the validation package.
+The ZIP's contents were downloaded from GitHub and compared byte-for-byte with the tested local package. The release was published as a prerelease on 2026-11-11; the public download was verified without authentication and matches the checksum above. Follow the separate phpBB submission procedure when preparing a CDB validation package.
+
+## Development-forum route
+
+On 2026-11-11 the maintainer supplied the text titled "Extension Development Forum Rules" from phpBB.com. This is supplied policy text, not an independent live-site verification. The published environment settings now permit phpBB.com, but direct requests receive a Cloudflare challenge. The supplied text resolves the development-topic requirements below; it does not include the separate Extension Validation Policy.
+
+| Supplied rule | Action for this extension |
+| --- | --- |
+| Every topic needs an allowed stage prefix | Use `[BETA] AI Anti-Spam for phpBB — 0.3.0-beta`. Do not use `[CDB]` before acceptance. |
+| BETA / RC need a public download; no registration may be required | Link the public GitHub install ZIP above. A draft release does not qualify. |
+| Downloads must be linked, not attached directly to the topic | Use the ZIP link in the prepared topic. |
+| Recommended topic format is optional; screenshots and demo are optional | A text-only beta topic is possible. No demo login is needed. |
+| Extension author provides support | Support questions belong in the development topic; do not imply phpBB Teams provide support. |
+| Security reports go to the author and Extension Security Tracker | The prepared topic explains both reporting destinations. |
+| Redistribution restrictions are disallowed; phpBB-derived code requires GPL v2 | The package declares GPL-2.0-only and contains license.txt. |
+| Development topics must intend eventual CDB submission and meet its packaging/license requirements | State CDB intent. The install ZIP passes EPV; still review the full Packaging and Version section of the separate Extension Validation Policy. |
+
+Prepared BBCode body: [PHPBB_BETA_TOPIC.txt](PHPBB_BETA_TOPIC.txt). After reviewing the Packaging and Version requirements referenced by these rules, create a topic in the Extensions in Development forum with the title above, paste the body and use Preview before submitting. The author line currently follows the package's BCA Contributors attribution; use the maintainer's phpBB.com username/profile if desired. Verify the public download first. No topic has been posted automatically.
+
+The beta announcement and a formal CDB submission are separate steps. The development-forum text does not establish that a beta version is acceptable for CDB validation. Keep version/status unchanged until the separate validation rules and remaining acceptance checks are reviewed.
 
 ## Copy-ready description
 
@@ -65,7 +84,7 @@ It does not establish model accuracy, real provider availability, actual email d
 
 ## Forum acceptance record
 
-Record results for this exact ZIP before proposing a release for wider use. Keep automatic hiding disabled on the live forum. Exercise optional moderation behavior on a disposable staging board.
+Continue recording results for this exact ZIP before proposing a stable release. Keep automatic hiding disabled on the live forum. Exercise optional moderation behavior on a disposable staging board.
 
 On 2026-11-11 the maintainer reported success after being asked to verify manual scanning, scheduled scanning and the message links. These outcomes are recorded as maintainer-reported, without independently collected forum logs or screenshots. This does not establish model accuracy, privacy-filter coverage or completion of the separate staging checks below.
 
@@ -86,10 +105,10 @@ Use synthetic posts for screenshots. Capture the credentials/status area with no
 ## Submission steps still requiring the maintainer
 
 1. Complete the acceptance record and select the phpBB.com account responsible for support. The repository author label is BCA Contributors; confirm the desired attribution before entering submission fields.
-2. Read the current rules from [phpBB Extensions](https://www.phpbb.com/extensions/) and its linked submission policies. The environment could not access phpBB.com on 2026-11-08 or on retry on 2026-11-11 because its network proxy rejected the destination. Acceptance of beta versions, required fields/screenshots and support-topic requirements have not been verified against current policy.
+2. Review Packaging and Version in the separate Extension Validation Policy before posting the beta topic; the supplied development-forum rules explicitly apply those packaging/license requirements too. Review the full policy before formal CDB submission. The development-forum text's optional screenshot/demo guidance does not establish CDB requirements. Earlier proxy denials were resolved by the published environment settings; live-site policy verification is now blocked by Cloudflare.
 3. Choose the submission version/status based on those rules and test results. Do not rename this beta to a stable version without reviewing metadata, changelog, package and validation together.
-4. Prepare the required screenshots and a publicly usable support/download path when appropriate. Review any public beta announcement before posting it.
+4. Review the prepared beta announcement, its public ZIP link and author attribution before posting it. Screenshots and a demo are optional under the supplied development-forum rules. Check any separate CDB requirements before submission.
 5. Sign in on phpBB.com and follow its extension submission flow. Use the install ZIP containing bca/antispam/, not GitHub's source archive. Include the external-service, billing and credential-storage disclosures above. Verify the uploaded file's identity and version.
 6. Track the phpBB review and address findings. Claim phpBB validation only after the Extensions Team approves the submission.
 
-No phpBB.com submission, public announcement or stable release has been made by preparing this document.
+The GitHub beta prerelease is public. No phpBB.com topic or formal submission has been posted, and no stable release or phpBB validation is claimed.
