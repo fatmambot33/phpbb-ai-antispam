@@ -35,7 +35,7 @@ On 2026-11-11 the maintainer supplied the text titled "Extension Development For
 | Redistribution restrictions are disallowed; phpBB-derived code requires GPL v2 | The package declares GPL-2.0-only and contains license.txt. |
 | Development topics must intend eventual CDB submission and meet its packaging/license requirements | State CDB intent. The install ZIP passes EPV; still review the full Packaging and Version section of the separate Extension Validation Policy. |
 
-Prepared BBCode body: [PHPBB_BETA_TOPIC.txt](PHPBB_BETA_TOPIC.txt). After reviewing the Packaging and Version requirements referenced by these rules, create a topic in the Extensions in Development forum with the title above, paste the body and use Preview before submitting. The author line uses the maintainer-confirmed phpBB.com username, bmwclubarmorique.fr. The package attribution is BCA Contributors. Verify the public download first. No topic has been posted automatically.
+Prepared BBCode body: [PHPBB_BETA_TOPIC.txt](PHPBB_BETA_TOPIC.txt). After reviewing the Packaging and Version requirements referenced by these rules, create a topic in the Extensions in Development forum with the title above, paste the body and use Preview before submitting. The author line uses the maintainer-confirmed phpBB.com username, fatmambot33. The package attribution is BCA Contributors. Verify the public download first. No topic has been posted automatically.
 
 The beta announcement and a formal CDB submission are separate steps. The development-forum text does not establish that a beta version is acceptable for CDB validation. Keep version/status unchanged until the separate validation rules and remaining acceptance checks are reviewed.
 
@@ -104,7 +104,7 @@ Use synthetic posts for screenshots. Capture the credentials/status area with no
 
 ## Submission steps still requiring the maintainer
 
-1. Complete the acceptance record. The maintainer has selected bmwclubarmorique.fr as the phpBB.com author account; use it for the topic and support. The repository author label is BCA Contributors.
+1. Complete the acceptance record. The maintainer has selected fatmambot33 as the phpBB.com author account; use it for the topic and support. The repository author label is BCA Contributors.
 2. Review Packaging and Version in the separate Extension Validation Policy before posting the beta topic; the supplied development-forum rules explicitly apply those packaging/license requirements too. Review the full policy before formal CDB submission. The development-forum text's optional screenshot/demo guidance does not establish CDB requirements. Earlier proxy denials were resolved by the published environment settings; live-site policy verification is now blocked by Cloudflare.
 3. Choose the submission version/status based on those rules and test results. Do not rename this beta to a stable version without reviewing metadata, changelog, package and validation together.
 4. Review the prepared beta announcement, its public ZIP link and author attribution before posting it. Screenshots and a demo are optional under the supplied development-forum rules. Check any separate CDB requirements before submission.
